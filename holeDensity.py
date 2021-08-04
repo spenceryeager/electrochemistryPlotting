@@ -15,22 +15,55 @@ import os
 root = Tk()
 root.withdraw()
 
-# mb.showinfo(title="Select Data", message="Select data folder then file containing energy and DOS data")
-# workingdir = fd.askdirectory(initialdir="")
-# workingfile = fd.askopenfilename(initialdir=workingdir)
-# interval = sd.askfloat("Data Intervals", 'Enter data intervals')
-interval = 0.001
+mb.showinfo(title="Select Data", message="Select data folder then file containing energy and DOS data")
 
-workingdir = ''
-workingfile=''
+
+def askdir():
+    workingdir = fd.askdirectory(initialdir="")
+    if workingdir == ():
+        quit()
+    return workingdir
+
+
+def askfile(workingdir):
+    file = fd.askopenfilename(initialdir=workingdir)
+    if file == ():
+        quit()
+    return file
+
+
+workingdir = askdir()
+workingfile = askfile(workingdir)
+interval = sd.askfloat("Data Intervals", 'Enter data intervals')
+
+# for debugging
+# workingdir = '/home/spenceryeager/Documents/python_bits/holeDensity'
+# workingfile='/home/spenceryeager/Documents/python_bits/holeDensity/test.csv'
+# interval = 0.001
 
 dos = pd.read_csv(workingfile, usecols=[1, 2])
+hole = np.array(integrate.cumulative_trapezoid(dos['DOS (states/(eV cm^3))'], dos['Energy wrt Vac (eV)'], interval))
+hole = np.abs(hole)
+holelog = np.log10(hole)
 
-# print(dos)
-
-# def DOS(E):
-    # return float(dos.loc[dos['Energy wrt Vac (eV)'] == -4.671, 'DOS (states/(eV cm^3))'])
-
-hole = integrate.cumulative_trapezoid(dos['DOS (states/(eV cm^3))'], dos['Energy wrt Vac (eV)'], interval)
+# file saving
+vals = {'Energy wrt Vac (eV)': dos['Energy wrt Vac (eV)'][1:], 'Hole Density (cm^-3)': hole, 'Log(Hole Density (cm^-3))':
+        holelog}
+calc_vals = pd.DataFrame(data=vals)
 
 
+def makefile(workingdir, newdir, filename):
+    path = os.path.join(workingdir, newdir)
+    isdir = os.path.isdir(path)
+    if not isdir:
+        os.mkdir(path)
+    filepath = os.path.join(path, filename)
+    return filepath
+
+
+calc_vals.to_csv(makefile(workingdir, "calculated_holes", "calculated_holes.csv"))
+
+# plot
+plt.plot(dos['Energy wrt Vac (eV)'][1:], holelog)
+plt.xlim(max(dos['Energy wrt Vac (eV)'][1:]), min(dos['Energy wrt Vac (eV)'][1:]))
+plt.show()

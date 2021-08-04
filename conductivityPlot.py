@@ -16,7 +16,8 @@ import os
 root = Tk()
 root.withdraw()
 
-workingfile = fd.askopenfilename(initialdir='')
+workingdir = fd.askdirectory(initialdir='/home/spenceryeager/Documents/python_bits/conductivityPlot/conductivity')
+workingfile = fd.askopenfilename(initialdir=workingdir)
 if workingfile == ():
     quit()
 highV = sd.askfloat(title='High Potential', prompt="Enter the high potential set")
@@ -48,7 +49,7 @@ def highloc(voltage, highV):
         if i == highV:
             loc = count
         count += 1
-    return (loc + 1)
+    return loc + 1
 
 
 highPotentialLoc = highloc(rawdata['Potential/V'], highV)
@@ -73,7 +74,21 @@ conductivity_array = resistivity_array ** -1
 ev_array = potential_array + 4.87
 
 # saving new arrays
-# enter code here to save data in a new directory and file.
+# making dictionary of all parameters
+allparams = {"Potential (V)": potential_array, "Current (A)": current_array, "Resistance (ohm)": resistance_array,
+             "Resistivity (ohm cm)": resistivity_array, "Conductivity (S/cm)": conductivity_array,
+             "Energy wrt Vac (eV)": ev_array}
+calc_vals = pd.DataFrame(data=allparams)
+
+def makefile(workingdir, newdir, filename):
+    path = os.path.join(workingdir, newdir)
+    isdir = os.path.isdir(path)
+    if not isdir:
+        os.mkdir(path)
+    filepath = os.path.join(path, filename)
+    return filepath
+
+calc_vals.to_csv(makefile(workingdir, "calculated_values", "calculated_values.csv"))
 
 # plotting
 plt.plot(ev_array, conductivity_array, color='red')

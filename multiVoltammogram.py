@@ -13,7 +13,7 @@ root.withdraw()
 number = sd.askinteger(title="Enter value", prompt="How many voltammograms are you plotting?")
 if number == None:
     quit()
-workingdir = fd.askdirectory(initialdir="enter folder here", title="Select data folder")
+workingdir = fd.askdirectory(initialdir="/run/user/1000/gvfs/sftp:host=file.engr.arizona.edu/Research/Ratcliff/Spencer/data/2021", title="Select data folder")
 if workingdir == ():
     quit()
 
@@ -22,10 +22,10 @@ if workingdir == ():
 plt.rc('font', size=15)
 plt.figure(figsize=(11,8))
 plt.xlabel('Potential (V)')
-plt.ylabel('Current (A)')
+plt.ylabel(r'Current Density (A cm$^{-2}$)')
 
 # setting up multi colors based on how many voltammograms are being plotted
-colors = plt.cm.viridis(np.linspace(0, 1, number))
+colors = plt.cm.brg(np.linspace(0, 1, number))
 
 count = 0
 while count < number:
@@ -33,15 +33,22 @@ while count < number:
     label = sd.askstring("Enter label", "Enter a legend label")
 
     # opening file, and counting how many lines are present until headers
-    file = open(workingfile, 'r')
-    count2 = 0
-    for line in file:
-        if line.strip() == "Potential/V, Current/A":
-            row = count2
-        count2 += 1
 
-    cv = pd.read_csv(workingfile, skiprows=row)
-    plt.plot(cv['Potential/V'], cv[' Current/A'], color=colors[count], label=label)
+
+    def rowskip(file):  # cleans up all the extra stuff in the header
+        file = open(workingfile, 'r')
+        index = 0
+        for line in file:
+            if line.strip() == "Potential/V, Current/A":
+                row = index
+            index += 1
+        return row
+
+
+    cv = pd.read_csv(workingfile, skiprows=rowskip(workingfile))
+    current_array = np.array(cv[' Current/A'])
+    current_array = current_array / 0.71 # current density
+    plt.plot(cv['Potential/V'], current_array, color=colors[count], label=label)
     plt.xlim(max(cv['Potential/V'] + 0.1), min(cv['Potential/V'] - 0.1))
     count += 1
 legendChoice = mb.askyesno("Display legend?", "Display legend?")

@@ -91,8 +91,16 @@ def makefile(workingdir, newdir, filename):
     return filepath
 
 
-calc_vals.to_csv(makefile(workingdir, "calculated_values", "calculated_values.csv"))
+calc_vals.to_csv(makefile(workingdir, "calculated_DOS", "calculated_DOS.csv"))
+
+readme = open(makefile(workingdir, "calculated_DOS", "readme.txt"), 'w')
+readme.write("Analysis code written by Spencer Yeager, University of Arizona \n")
+readme.write("Find the source code here: https://github.com/spenceryeager/electrochemistryPlotting \n")
+readme.write("densityOfStates.py")
+readme.close()
+
 # plotting
+plt.rc('font', size=12)
 plt.plot(dos_array, energy_array, color='red')
 plt.xlabel(r'Density of States (states eV$^{-1}$ cm$^{-3}$)')
 plt.ylabel(ytit)

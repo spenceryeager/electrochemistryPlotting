@@ -16,18 +16,37 @@ import os
 root = Tk()
 root.withdraw()
 
-workingdir = fd.askdirectory(initialdir='/home/spenceryeager/Documents/python_bits/conductivityPlot/conductivity')
-workingfile = fd.askopenfilename(initialdir=workingdir)
-if workingfile == ():
+
+def programquit():
+    mb.showerror(title="Abort", message="Program aborting")
     quit()
+
+
+def fileselect():
+    filechoice = False
+    messagecount = 0
+    while not filechoice:
+        if messagecount > 0:
+            mb.showinfo(title='Select files again', message='Select files again')
+        workingdir = fd.askdirectory(initialdir='/home/spenceryeager/Documents/python_bits/conductivityPlot/conductivity')
+        if workingdir == ():
+            programquit()
+        workingfile = fd.askopenfilename(initialdir=workingdir)
+        if workingfile == ():
+            programquit()
+        filechoice = mb.askyesno(title="Confirm data selection", message="Continue with selected data?")
+        messagecount += 1    
+    return workingdir, workingfile
+
+
+workingdir, workingfile = fileselect()
+
 highV = sd.askfloat(title='High Potential', prompt="Enter the high potential set")
 if highV == None:
-    mb.showerror(title="Abort", message="Program aborting")
-    quit()
+    programquit()
 potential_diff = sd.askfloat(title='Potential difference', prompt='Enter the potential difference across channel in V')
 if potential_diff == None:
-    mb.showerror(title="Abort", message="Program aborting")
-    quit()
+    programquit()
 
 
 def rowskip(file):  # cleans up all the extra stuff in the header

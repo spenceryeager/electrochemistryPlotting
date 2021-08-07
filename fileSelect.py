@@ -1,7 +1,7 @@
 import tkinter.filedialog as fd
 import tkinter.simpledialog as sd
 import tkinter.messagebox as mb
-from tkinter import *
+from tkinter import Tk
 
 def programquit():
     mb.showerror(title="Abort", message="Program aborting")

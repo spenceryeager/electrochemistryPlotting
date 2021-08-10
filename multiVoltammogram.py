@@ -20,6 +20,7 @@ if workingdir == ():
 
 
 plt.rc('font', size=15)
+plt.rc('text', usetex=True)
 plt.figure(figsize=(11,8))
 plt.xlabel('Potential (V)')
 plt.ylabel(r'Current Density (A cm$^{-2}$)')

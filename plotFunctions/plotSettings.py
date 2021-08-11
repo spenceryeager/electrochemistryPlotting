@@ -18,12 +18,15 @@ def labels(axis):
     return axLabel
 
 
-def makePlot():
+def plotSettings():
     width = sizing("width")
     height = sizing("height")
     yax = labels("y axis")
     xax = labels("x axis")
     titlechoice = mb.askyesno(title="Title?", message="Make a graph title?")
+    title = None
     if titlechoice:
         title = sd.askstring(title="Title", message="Enter graph title")
     fontsize = sd.askinteger(title="Font Size", message="Enter font size for graph")
+
+    return width, height, yax, xax, title, fontsize

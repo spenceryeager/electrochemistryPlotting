@@ -14,6 +14,7 @@ def select():
     while not filechoice:
         if messagecount > 0:
             mb.showinfo(title='Select files again', message='Select files again')
+        mb.showinfo(title="Select Directory", message="Select the working directory")
         workingdir = fd.askdirectory(initialdir='/home/spenceryeager/Documents/python_bits/conductivityPlot/conductivity')
         if workingdir == ():
             programquit()

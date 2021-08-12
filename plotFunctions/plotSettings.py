@@ -26,7 +26,7 @@ def plotSettings():
     titlechoice = mb.askyesno(title="Title?", message="Make a graph title?")
     title = None
     if titlechoice:
-        title = sd.askstring(title="Title", message="Enter graph title")
-    fontsize = sd.askinteger(title="Font Size", message="Enter font size for graph")
+        title = sd.askstring(title="Title", prompt="Enter graph title")
+    fontsize = sd.askinteger(title="Font Size", prompt="Enter font size for graph")
 
     return width, height, yax, xax, title, fontsize

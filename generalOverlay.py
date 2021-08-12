@@ -1,13 +1,14 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as numpy
+import numpy as np
 import os
 import tkinter.messagebox as mb
 import tkinter.simpledialog as sd
 import tkinter.filedialog as fd
+from plotFunctions.plotSettings import plotSettings
 from fileSelect import select
 from tkinter import *
-import plotSettings.plotSettings as ps
+
 
 # this program makes a general plotting. It may need to be rewritten to accomodate certain files.
 root = Tk()
@@ -18,7 +19,7 @@ number = sd.askinteger(title="Enter value", prompt="How many datasets are being 
 if number == None:
     quit()
 
-workingdir = fd.askdirectory
+workingdir = fd.askdirectory()
 
 colors = plt.cm.brg(np.linspace(0, 1, number))
 
@@ -39,22 +40,21 @@ while count < number:
         file = open(workingfile, 'r')
         index = 0
         for line in file:
-            if line.strip() == "Potential/V, i1/A, i2/A":
+            if line.strip() == header:
                 row = index
             index += 1
         return row
 
 
     df = pd.read_csv(workingfile, skiprows=rowskip(workingfile))
-
     plt.plot(df[xhead], df[yhead])
-    
-    width, height, yax, xax, title, fontsize = plotSettings.plotSettings()
-    plt.figure(figsize=(width, height))
-    plt.xlabel(xax)
-    plt.ylabel(yax)
-    plt.title(title)
-    plt.rc(fontsize=fontsize)
+    count +=1
 
+width, height, yax, xax, title, fontsize = plotSettings()
+plt.figure(figsize=(width, height))
+plt.xlabel(xax)
+plt.ylabel(yax)
+plt.title(title)
+plt.rc("font", size=fontsize)
 
-    plt.show()
+plt.show()

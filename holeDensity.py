@@ -19,7 +19,7 @@ mb.showinfo(title="Select Data", message="Select data folder then file containin
 
 
 def askdir():
-    workingdir = fd.askdirectory(initialdir="")
+    workingdir = fd.askdirectory(initialdir="/run/user/1000/gvfs/sftp:host=file.engr.arizona.edu/Research/Ratcliff/Spencer/data/2021/08_Aug/08Aug2021/cv/tfsi")
     if workingdir == ():
         quit()
     return workingdir
@@ -66,4 +66,6 @@ calc_vals.to_csv(makefile(workingdir, "calculated_holes", "calculated_holes.csv"
 # plot
 plt.plot(dos['Energy wrt Vac (eV)'][1:], holelog)
 plt.xlim(max(dos['Energy wrt Vac (eV)'][1:]), min(dos['Energy wrt Vac (eV)'][1:]))
+plt.xlabel("Energy w.r.t Vacuum (eV)")
+plt.ylabel(r"log Hole Density (cm$^{-3}$)")
 plt.show()

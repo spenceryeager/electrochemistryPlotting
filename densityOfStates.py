@@ -13,7 +13,7 @@ import os
 root = Tk()
 root.withdraw()
 
-workingdir = fd.askdirectory(initialdir="/home/spenceryeager/Documents/python_bits/densityOfStates")
+workingdir = fd.askdirectory(initialdir="enter file path")
 workingfile = fd.askopenfilename(initialdir=workingdir)
 
 highV = sd.askfloat(title='High Potential', prompt="Enter the high potential set")
@@ -96,7 +96,9 @@ calc_vals.to_csv(makefile(workingdir, "calculated_DOS", "calculated_DOS.csv"))
 readme = open(makefile(workingdir, "calculated_DOS", "readme.txt"), 'w')
 readme.write("Analysis code written by Spencer Yeager, University of Arizona \n")
 readme.write("Find the source code here: https://github.com/spenceryeager/electrochemistryPlotting \n")
-readme.write("densityOfStates.py")
+readme.write("densityOfStates.py \n")
+readme.write("Here are the parameters used to generate this data: \n")
+readme.write("area (cm^2) = " + str(area) + "\nfilm thickness (nm) = " + str(d) + "\nscan rate (V/s) = " + str(v))
 readme.close()
 
 # plotting

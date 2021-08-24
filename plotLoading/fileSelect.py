@@ -11,11 +11,12 @@ def programquit():
 def select():
     filechoice = False
     messagecount = 0
+    init_dir = sd.askstring(title="Enter initial direction", prompt="Enter the initial directory path (for remote locations)")
     while not filechoice:
         if messagecount > 0:
             mb.showinfo(title='Select files again', message='Select files again')
-        mb.showinfo(title="Select Directory", message="Select the working directory")
-        workingdir = fd.askdirectory(initialdir='/home/spenceryeager/Documents/python_bits/conductivityPlot/conductivity')
+        mb.showinfo(title="Select Working Directory", message="Select the working directory")
+        workingdir = fd.askdirectory(initialdir=init_dir)
         if workingdir == ():
             programquit()
         workingfile = fd.askopenfilename(initialdir=workingdir)

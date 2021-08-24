@@ -47,7 +47,7 @@ def highloc(voltage, highV):
         if i == highV:
             loc = count
         count += 1
-    return loc + 1
+    return loc
 
 
 highPotentialLoc = highloc(rawdata['Potential/V'], highV)
@@ -86,7 +86,7 @@ def makefile(workingdir, newdir, filename):
     filepath = os.path.join(path, filename)
     return filepath
 
-calc_vals.to_csv(makefile(workingdir, "calculated_values", "calculated_values.csv"))
+calc_vals.to_csv(makefile(workingdir, "calculated_conductivity", "calculated_conductivity.csv"))
 
 # plotting
 plt.plot(ev_array, conductivity_array, color='red')

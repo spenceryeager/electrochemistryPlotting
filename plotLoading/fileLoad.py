@@ -4,6 +4,7 @@ import tkinter.filedialog as fd
 import pandas as pd
 from tkinter import *
 from fileSelect import select
+from rowSkip import rowSkip
 
 root = Tk()
 root.withdraw()
@@ -11,8 +12,8 @@ root.withdraw()
 def load():
     name = sd.askstring(title="Enter label", prompt="Enter label for data set")
     workingdir, workingfile= select()
-    print(workingfile)
-    # df = pd.read_csv(workingfile)
+    df = pd.read_csv(workingfile, skiprows=rowSkip(workingfile))
+    print(df)
 
 
 

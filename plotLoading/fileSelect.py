@@ -8,6 +8,21 @@ def programquit():
     quit()
 
 
+# used to select a single file 
+def singleFileSelect(workingdir):
+    filechoice = False
+    messagecount = 0
+    while not filechoice:
+        if messagecount > 0:
+            mb.showinfo(title='Select files again', message='Select files again')
+        workingfile = fd.askopenfilename(initialdir=workingdir)
+        if workingfile == ():
+            programquit()
+        filechoice = mb.askyesno(title="Confirm data selection", message="Continue with selected data?")
+        messagecount += 1    
+    return workingfile
+
+
 def select():
     filechoice = False
     messagecount = 0

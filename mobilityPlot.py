@@ -55,7 +55,7 @@ mobility = cond_values / (hole_number * constant.elementary_charge)
 print(mobility)
 
 # file saving
-vals = {'Energy wrt Vac (eV)': hole_ev, 'Hole Density (cm^-3)': mobility}
+vals = {'Energy wrt Vac (eV)': hole_ev, 'Mobility (cm^2 V^-1 s^-1)': mobility}
 calc_vals = pd.DataFrame(data=vals)
 
 

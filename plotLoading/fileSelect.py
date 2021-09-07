@@ -23,6 +23,14 @@ def singleFileSelect(workingdir):
     return workingfile
 
 
+def workingdirSelect():
+    init_dir = sd.askstring(title="Enter initial direction", prompt="Enter the initial directory path (for remote locations)")
+    workingdir = fd.askdirectory(initialdir=init_dir)
+    if workingdir == ():
+        programquit()
+    return workingdir
+
+
 def select():
     filechoice = False
     messagecount = 0

@@ -18,7 +18,7 @@ root.withdraw()
 def main():
     workingdir = workingdirSelect()
     label_list, datasets = dataLoading(workingdir)
-    plotting(label_list, datasets)
+    plotting(label_list, datasets, colorlist(len(label_list)))
 
 
 def dataLoading(workingdir):
@@ -37,14 +37,29 @@ def dataLoading(workingdir):
     return label_list, datasets
 
 
-def plotting(label_list, datalist):
+def colorlist(data_points):
+    # quick note: many colormaps in mpl have really light colors not good for plots.
+    # so I will double the amount of color points,
+    # then create a colormap list starting at the darker colors only.
+    colors = plt.cm.Blues(np.linspace(0, 1, data_points*2))
+    colors = colors[data_points:]
+    return colors
+
+
+
+def plotting(label_list, datalist, colors):
     plot_number = len(label_list)
     count = 0
     while count < plot_number:
         data = datalist[count]
-        plt.plot(data['Wavelength (nm)'], data['Absorbance (AU)'])
+        plt.plot(data['Wavelength (nm)'], data['Absorbance (AU)'], color=colors[count], linewidth=3, label=label_list[count])
         count += 1
+    plt.xlim(330, 1000)
+    plt.legend(loc='best')
+    plt.xlabel("Wavelength (nm)")
+    plt.ylabel("Absorbance (arb. units)")
     plt.show()
+
 
 if __name__ == "__main__":
     main()

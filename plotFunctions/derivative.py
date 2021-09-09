@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.widgets as mwidgets
 import tkinter.messagebox as mb
+from scipy.optimize import curve_fit
 import numpy as np
 import pandas as pd
 
@@ -19,13 +20,13 @@ def getDerivatives():
     plt.plot(xval, yval, color='red')
     dydx = np.diff(yval) / np.diff(xval)
     plt.plot(xval[:-1], dydx, color='lightblue')
-   
-    fit_deriv = np.polynomial.polynomial.Polynomial.fit(xval[:-1], dydx, 2)
-    
-    # plt.plot(xval[:-1], fit_deriv[0])
-    print(fit_deriv)
+
+    # popt = curve_fit(expfit, xval[:1], dydx)
+    # plt.plot(xval[:-1], expfit(xval[:-1], *popt))
     plt.show()
     
+def expfit(x, a, b, c):
+    return a * np.exp(-b * x) + c
 
 
 def rowskip(workingfile):  # cleans up all the extra stuff in the header

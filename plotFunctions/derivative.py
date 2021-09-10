@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.widgets as mwidgets
 import tkinter.messagebox as mb
 from scipy.optimize import curve_fit
+from scipy.signal import savgol_filter
 import numpy as np
 import pandas as pd
 
@@ -11,22 +12,22 @@ def getDerivatives():
     df = pd.read_csv(workingfile, skiprows=rowskip(workingfile))
     survey_plot(df)
     index = indexer(df, compval)
-    df = df[0:index]
 
-    xval = np.array(df['Potential/V'])
-    yval = np.array(df[' Current/A'])
-    yval = yval * -1
-
+    xval = np.array(df[0:index]['Potential/V'])
+    yval = np.array(df[0:index][' Current/A'])
     plt.plot(xval, yval, color='red')
-    dydx = np.diff(yval) / np.diff(xval)
+
+    dydx, filter_dydx = differential(xval, yval)
+
     plt.plot(xval[:-1], dydx, color='lightblue')
 
-    # popt = curve_fit(expfit, xval[:1], dydx)
-    # plt.plot(xval[:-1], expfit(xval[:-1], *popt))
+    plt.plot(xval[:-1], filter_dydx)
     plt.show()
     
-def expfit(x, a, b, c):
-    return a * np.exp(-b * x) + c
+def differential(x, y):
+    dydx = np.diff(y) / np.diff(x) # this gets a list of the differential values
+    filter_dydx = savgol_filter(dydx, window_length=31, polyorder=2)
+    return dydx, filter_dydx
 
 
 def rowskip(workingfile):  # cleans up all the extra stuff in the header

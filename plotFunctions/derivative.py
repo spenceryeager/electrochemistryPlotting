@@ -54,7 +54,7 @@ def getDerivatives():
     print(dydx_avg)
     print(current_avg)
     print(dydx_avg/current_avg)
-
+    # note: take the maximum of the dydx and use that as the starting point.
     
 def differential(x, y):
     dydx = np.diff(y) / np.diff(x) # this gets a list of the differential values

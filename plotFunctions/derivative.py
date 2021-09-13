@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 def getDerivatives():
-    workingfile = "/home/spenceryeager/Documents/calculations/derivative_calc/010Vs.csv"
+    workingfile = "/home/spenceryeager/Documents/calc/derivative/010Vs.csv"
     row = rowskip(workingfile)
     df = pd.read_csv(workingfile, skiprows=rowskip(workingfile))
     survey_plot(df)
@@ -15,7 +15,7 @@ def getDerivatives():
 
     xval = np.array(df['Potential/V'])
     yval = np.array(df[' Current/A'])
-    yval = yval * -1
+    yval = yval * -1 # making negative to 
 
     plt.plot(xval, yval, color='red')
     dydx = np.diff(yval) / np.diff(xval)

@@ -2,31 +2,64 @@ import matplotlib.pyplot as plt
 import matplotlib.widgets as mwidgets
 import tkinter.messagebox as mb
 from scipy.optimize import curve_fit
+from scipy.signal import savgol_filter
 import numpy as np
 import pandas as pd
 
 def getDerivatives():
-    workingfile = "/home/spenceryeager/Documents/calc/derivative/010Vs.csv"
+    # Getting the data
+    workingfile = "/home/spenceryeager/Documents/calculations/derivative_calc/010Vs.csv"
     row = rowskip(workingfile)
     df = pd.read_csv(workingfile, skiprows=rowskip(workingfile))
-    survey_plot(df)
-    index = indexer(df, compval)
-    df = df[0:index]
-
-    xval = np.array(df['Potential/V'])
-    yval = np.array(df[' Current/A'])
-    yval = yval * -1 # making negative to 
-
-    plt.plot(xval, yval, color='red')
-    dydx = np.diff(yval) / np.diff(xval)
-    plt.plot(xval[:-1], dydx, color='lightblue')
-
-    # popt = curve_fit(expfit, xval[:1], dydx)
-    # plt.plot(xval[:-1], expfit(xval[:-1], *popt))
-    plt.show()
+    potential = np.array(df['Potential/V'])
+    current = np.array(df[' Current/A'])
     
-def expfit(x, a, b, c):
-    return a * np.exp(-b * x) + c
+    # Making the initial selection plot
+    fig, ax = plt.subplots()
+    ax.plot(potential, current)
+    rectprops = dict(facecolor='red', alpha=0.4)
+    span = mwidgets.SpanSelector(ax, onselect, 'horizontal', rectprops=rectprops)
+    plt.title("Only select the maximum x value")
+    plt.show()
+
+    # skipping the first scan and using 2nd scan.
+    initial_potential = potential[0]
+    initial_index = indexer2(potential[1:], initial_potential)
+    initial_index = initial_index + 1 
+    subarray = potential[initial_index:]
+    index = indexer(subarray, max_compval)
+    index = initial_index + index
+
+    # Making second selection plot
+    xval = potential[initial_index:index]
+    yval = current[initial_index:index]
+    fig, ax = plt.subplots()
+    ax.plot(xval, yval, color='red', label='Experimental CV')
+    dydx, filter_dydx = differential(xval, yval) # returns derivative and Savitzky-Golay filtered derivative.
+    dydx_xvals = xval[:-1]
+    ax.plot(dydx_xvals, dydx, color='lightblue', label='Calculated Derivative')
+    ax.plot(dydx_xvals, filter_dydx, color='blue', label='Savitzky-Golay Filtered Derivative')
+    ax.legend(loc='best')
+    rectprops = dict(facecolor='red', alpha=0.4)
+    span = mwidgets.SpanSelector(ax, onselect, 'horizontal', rectprops=rectprops)
+    plt.title('Select the most linear range of the SG-Derivative\n and the experimental CV')
+    plt.show()
+
+    # Picking out second set of indexes for the average
+    min_index = indexer(dydx_xvals, min_compval)
+    max_index = indexer(dydx_xvals, max_compval)
+
+    dydx_avg = np.average(dydx[min_index:max_index])
+    current_avg = np.average(yval[min_index:max_index])
+    print(dydx_avg)
+    print(current_avg)
+    print(dydx_avg/current_avg)
+    # note: take the maximum of the dydx and use that as the starting point.
+    
+def differential(x, y):
+    dydx = np.diff(y) / np.diff(x) # this gets a list of the differential values
+    filter_dydx = savgol_filter(dydx, window_length=31, polyorder=2)
+    return dydx, filter_dydx
 
 
 def rowskip(workingfile):  # cleans up all the extra stuff in the header
@@ -41,29 +74,28 @@ def rowskip(workingfile):  # cleans up all the extra stuff in the header
 
 def indexer(data, comp_value):
     index = 0
-    while data['Potential/V'][index] <= comp_value:
+    if comp_value >= 0:
+        while data[index] <= comp_value:
+            index += 1
+    else:
+        while data[index] <= comp_value:
+            index += 1
+    return index
+
+
+def indexer2(data, comp_value): # gets the second (or subsequent) scans
+    index = 0
+    while data[index] != comp_value:
         index += 1
     return index
 
 
-def survey_plot(data):
-
-
-    def onselect(vmin, vmax):
-        global compval
-        compval = vmax
-        mb.showinfo(title="Close out", message="The following maximum potential was selected:" + str(compval) + " If this value is okay, close out of plot. If not, reselect")
-
-
-    fig, ax = plt.subplots()
-    ax.plot(data['Potential/V'], data[' Current/A'])
-    rectprops = dict(facecolor='red', alpha=0.4)
-    span = mwidgets.SpanSelector(ax, onselect, 'horizontal', rectprops=rectprops)
-    plt.show()
-
-
-# def deriv_plot()
-
+def onselect(vmin, vmax):
+    global max_compval
+    global min_compval
+    max_compval = vmax
+    min_compval = vmin
+    mb.showinfo(title="Close out", message="The following maximum x value was selected:\n" + str(max_compval) + "\nThe following minium x value was select:\n" + str(min_compval)+"\nIf this value is okay, close out of plot. If not, reselect")
 
 
 if __name__ == '__main__':

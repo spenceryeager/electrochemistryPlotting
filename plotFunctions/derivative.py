@@ -36,13 +36,24 @@ def getDerivatives():
     fig, ax = plt.subplots()
     ax.plot(xval, yval, color='red', label='Experimental CV')
     dydx, filter_dydx = differential(xval, yval) # returns derivative and Savitzky-Golay filtered derivative.
-    ax.plot(xval[:-1], dydx, color='lightblue', label='Calculated Derivative')
-    ax.plot(xval[:-1], filter_dydx, color='blue', label='Savitzky-Golay Filtered Derivative')
+    dydx_xvals = xval[:-1]
+    ax.plot(dydx_xvals, dydx, color='lightblue', label='Calculated Derivative')
+    ax.plot(dydx_xvals, filter_dydx, color='blue', label='Savitzky-Golay Filtered Derivative')
     ax.legend(loc='best')
     rectprops = dict(facecolor='red', alpha=0.4)
     span = mwidgets.SpanSelector(ax, onselect, 'horizontal', rectprops=rectprops)
     plt.title('Select the most linear range of the SG-Derivative\n and the experimental CV')
     plt.show()
+
+    # Picking out second set of indexes for the average
+    min_index = indexer(dydx_xvals, min_compval)
+    max_index = indexer(dydx_xvals, max_compval)
+
+    dydx_avg = np.average(dydx[min_index:max_index])
+    current_avg = np.average(yval[min_index:max_index])
+    print(dydx_avg)
+    print(current_avg)
+    print(dydx_avg/current_avg)
 
     
 def differential(x, y):
@@ -67,7 +78,7 @@ def indexer(data, comp_value):
         while data[index] <= comp_value:
             index += 1
     else:
-        while data[index] >= comp_value:
+        while data[index] <= comp_value:
             index += 1
     return index
 

@@ -67,15 +67,27 @@ def getDerivatives():
             index += 1
     index = index + min_index
 
-
+    # Inflection point double check. If this doesn't work, user will be annoyed (me)
     fig, ax = plt.subplots()
     ax.plot(xval, yval, color='firebrick', label='Experimental CV')
     ax.plot(dydx_xvals, dydx, color='lightblue', label='Calculated Derivative')
     ax.plot(dydx_xvals, filter_dydx, color='blue', label='Savitzky-Golay Filtered Derivative')
     ax.plot(dydx_xvals[index], filter_dydx[index], marker='o', color='red')
     ax.legend(loc='best')
-    plt.title('Select the inflection point on the derivative')
+    plt.title('Double check the calculated inflection point')
     plt.show()
+
+    # Making a confirmation plot on the actual CV.
+    inflection_loc = dydx_xvals[index]
+    print(inflection_loc)
+    loc = np.where(potential == inflection_loc)
+    val = loc[0]
+    fig, ax = plt.subplots()
+    ax.plot(potential, current, color='firebrick')
+    ax.axline((inflection_loc, 0), slope=1, color='black', label='Cut off')
+    ax.legend(loc='best')
+    plt.show()
+
     
 def differential(x, y, apply_filter):
     dydx = np.diff(y) / np.diff(x) # this gets a list of the differential values

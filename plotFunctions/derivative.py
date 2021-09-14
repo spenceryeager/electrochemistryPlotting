@@ -3,6 +3,7 @@ import matplotlib.widgets as mwidgets
 import tkinter.messagebox as mb
 from scipy.optimize import curve_fit
 from scipy.signal import savgol_filter
+from scipy.ndimage import gaussian_filter1d
 import numpy as np
 import pandas as pd
 
@@ -16,7 +17,7 @@ def getDerivatives():
     
     # Making the initial selection plot
     fig, ax = plt.subplots()
-    ax.plot(potential, current)
+    ax.plot(potential, current, color='firebrick')
     rectprops = dict(facecolor='red', alpha=0.4)
     span = mwidgets.SpanSelector(ax, onselect, 'horizontal', rectprops=rectprops)
     plt.title("Only select the maximum x value")
@@ -34,33 +35,60 @@ def getDerivatives():
     xval = potential[initial_index:index]
     yval = current[initial_index:index]
     fig, ax = plt.subplots()
-    ax.plot(xval, yval, color='red', label='Experimental CV')
-    dydx, filter_dydx = differential(xval, yval) # returns derivative and Savitzky-Golay filtered derivative.
+    ax.plot(xval, yval, color='firebrick', label='Experimental CV')
+    dydx, filter_dydx = differential(xval, yval, True) # returns derivative and Savitzky-Golay filtered derivative.
     dydx_xvals = xval[:-1]
     ax.plot(dydx_xvals, dydx, color='lightblue', label='Calculated Derivative')
     ax.plot(dydx_xvals, filter_dydx, color='blue', label='Savitzky-Golay Filtered Derivative')
     ax.legend(loc='best')
     rectprops = dict(facecolor='red', alpha=0.4)
     span = mwidgets.SpanSelector(ax, onselect, 'horizontal', rectprops=rectprops)
-    plt.title('Select the most linear range of the SG-Derivative\n and the experimental CV')
+    plt.title('Select the inflection point on the derivative')
     plt.show()
 
+    
     # Picking out second set of indexes for the average
     min_index = indexer(dydx_xvals, min_compval)
     max_index = indexer(dydx_xvals, max_compval)
 
-    dydx_avg = np.average(dydx[min_index:max_index])
-    current_avg = np.average(yval[min_index:max_index])
-    print(dydx_avg)
-    print(current_avg)
-    print(dydx_avg/current_avg)
+    dydx_gauss = gauss_smooth(dydx[min_index:max_index])
+    dydx_gauss_xval = dydx_xvals[min_index:max_index]
+
+    dydx3 = differential(differential(dydx_gauss, dydx_gauss_xval, False), dydx_gauss_xval[:-1], False)
+    print(len(dydx3))
+
+    # fig, ax = plt.subplots()
+    # ax.plot(xval, yval, color='firebrick', label='Experimental CV')
+    # ax.plot(dydx_xvals, dydx, color='lightblue', label='Calculated Derivative')
+    # ax.plot(dydx_xvals, filter_dydx, color='blue', label='Savitzky-Golay Filtered Derivative')
+    # # ax.plot(dydx_xvals[:-2], dydx3)
+    # ax.legend(loc='best')
+    # plt.title('Select the inflection point on the derivative')
+    # plt.show()
+    # gauss1d = gauss_smooth(dydx)
+    # dydx2, filter_dydx2 = differential(gauss1d, dydx_xvals)
+    # dydx2_xvals = dydx_xvals[:-1]
+    # dydx2 = dydx2/np.max(dydx2)
+    # dydx3, filter_dydx3 = differential(dydx2, dydx2_xvals)
+    # dydx3_xvals = dydx2_xvals[:-1]
+    # ax.plot(dydx3_xvals, (dydx3/np.max(dydx3)))
+    # dydx2 = filter_dydx[min_index:max_index]
+    # dydx2_xvals = dydx_xvals[min_index:max_index]
+    # dydx2, filter_dydx2 = differential(dydx2, dydx2_xvals)
+    # dydx2_xvals = dydx2_xvals[:-1]
     # note: take the maximum of the dydx and use that as the starting point.
     
-def differential(x, y):
+def differential(x, y, apply_filter):
     dydx = np.diff(y) / np.diff(x) # this gets a list of the differential values
-    filter_dydx = savgol_filter(dydx, window_length=31, polyorder=2)
-    return dydx, filter_dydx
+    if apply_filter:
+        filter_dydx = savgol_filter(dydx, window_length=31, polyorder=3)
+        return dydx, filter_dydx
+    else:
+        return dydx
 
+def gauss_smooth(x):
+    smoothed = gaussian_filter1d(x, 10)
+    return smoothed
 
 def rowskip(workingfile):  # cleans up all the extra stuff in the header
     file = open(workingfile, 'r')

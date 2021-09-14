@@ -47,36 +47,35 @@ def getDerivatives():
     plt.show()
 
     
-    # Picking out second set of indexes for the average
+    # Picking out second set of indexes for more derivatives!
     min_index = indexer(dydx_xvals, min_compval)
     max_index = indexer(dydx_xvals, max_compval)
 
+    # Calculating third derivative. Check out the recursion
     dydx_gauss = gauss_smooth(dydx[min_index:max_index])
     dydx_gauss_xval = dydx_xvals[min_index:max_index]
-
+    dydx3_xval = dydx_gauss_xval[:-1]
+    dydx3_xval = dydx3_xval[:-1]
     dydx3 = differential(differential(dydx_gauss, dydx_gauss_xval, False), dydx_gauss_xval[:-1], False)
-    print(len(dydx3))
+    
+    index = 0
+    if dydx3[0] > 0:
+        while dydx3[index] > 0:
+            index += 1
+    else:
+        while dydx3[index] < 0:
+            index += 1
+    index = index + min_index
 
-    # fig, ax = plt.subplots()
-    # ax.plot(xval, yval, color='firebrick', label='Experimental CV')
-    # ax.plot(dydx_xvals, dydx, color='lightblue', label='Calculated Derivative')
-    # ax.plot(dydx_xvals, filter_dydx, color='blue', label='Savitzky-Golay Filtered Derivative')
-    # # ax.plot(dydx_xvals[:-2], dydx3)
-    # ax.legend(loc='best')
-    # plt.title('Select the inflection point on the derivative')
-    # plt.show()
-    # gauss1d = gauss_smooth(dydx)
-    # dydx2, filter_dydx2 = differential(gauss1d, dydx_xvals)
-    # dydx2_xvals = dydx_xvals[:-1]
-    # dydx2 = dydx2/np.max(dydx2)
-    # dydx3, filter_dydx3 = differential(dydx2, dydx2_xvals)
-    # dydx3_xvals = dydx2_xvals[:-1]
-    # ax.plot(dydx3_xvals, (dydx3/np.max(dydx3)))
-    # dydx2 = filter_dydx[min_index:max_index]
-    # dydx2_xvals = dydx_xvals[min_index:max_index]
-    # dydx2, filter_dydx2 = differential(dydx2, dydx2_xvals)
-    # dydx2_xvals = dydx2_xvals[:-1]
-    # note: take the maximum of the dydx and use that as the starting point.
+
+    fig, ax = plt.subplots()
+    ax.plot(xval, yval, color='firebrick', label='Experimental CV')
+    ax.plot(dydx_xvals, dydx, color='lightblue', label='Calculated Derivative')
+    ax.plot(dydx_xvals, filter_dydx, color='blue', label='Savitzky-Golay Filtered Derivative')
+    ax.plot(dydx_xvals[index], filter_dydx[index], marker='o', color='red')
+    ax.legend(loc='best')
+    plt.title('Select the inflection point on the derivative')
+    plt.show()
     
 def differential(x, y, apply_filter):
     dydx = np.diff(y) / np.diff(x) # this gets a list of the differential values

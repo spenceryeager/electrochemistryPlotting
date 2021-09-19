@@ -79,7 +79,6 @@ def getDerivatives():
 
     # Making a confirmation plot on the actual CV.
     inflection_loc = dydx_xvals[index]
-    print(inflection_loc)
     loc = np.where(potential == inflection_loc)
     val = loc[0]
     fig, ax = plt.subplots()

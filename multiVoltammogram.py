@@ -1,5 +1,11 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib import rcParams
+rcParams['font.family'] = 'sans-serif'
+rcParams['font.sans-serif'] = ['Arial']
+rcParams['font.weight'] = 'bold'
+rcParams['axes.labelweight'] = 'bold'
+rcParams['savefig.dpi'] = 300
 import os
 import tkinter.filedialog as fd
 import tkinter.simpledialog as sd
@@ -13,20 +19,19 @@ root.withdraw()
 number = sd.askinteger(title="Enter value", prompt="How many voltammograms are you plotting?")
 if number == None:
     quit()
-workingdir = fd.askdirectory(initialdir="/run/user/1000/gvfs/sftp:host=file.engr.arizona.edu/Research/Ratcliff/Spencer/data/2021", title="Select data folder")
+workingdir = fd.askdirectory(initialdir="", title="Select data folder")
 if workingdir == ():
     quit()
 
 
 
 plt.rc('font', size=15)
-plt.rc('text', usetex=True)
 plt.figure(figsize=(11,8))
 plt.xlabel('Potential (V)')
 plt.ylabel(r'Current Density (A cm$^{-2}$)')
 
 # setting up multi colors based on how many voltammograms are being plotted
-colors = plt.cm.brg(np.linspace(0, 1, number))
+colors = plt.cm.jet(np.linspace(0, 1, number))
 
 count = 0
 while count < number:

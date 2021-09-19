@@ -42,7 +42,8 @@ def rowskip(working_file):
 
 def plot(potential, current):
     plt.rc('font', size=12)
-    plt.plot(potential, current, color='red', linewidth=3)
+    plt.figure(figsize=(10,6))
+    plt.plot(potential, current, color='red', linewidth=1)
     plt.xlim(max(potential + 0.1), min(potential - 0.1))
     plt.xlabel('Potential (V)')
     plt.ylabel('Current Density (A/cm$^{2}$)')

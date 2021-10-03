@@ -5,7 +5,7 @@ import tkinter.filedialog as fd
 import tkinter.simpledialog as sd
 import tkinter.messagebox as mb
 from tkinter import *
-import fileSelect
+from plotLoading import fileSelect
 import os
 
 

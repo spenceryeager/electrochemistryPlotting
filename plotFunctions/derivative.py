@@ -83,6 +83,7 @@ def getDerivatives():
     fig, ax = plt.subplots()
     ax.plot(potential, current, color='firebrick')
     ax.axline((inflection_loc, 0), slope=1, color='black', label='Cutoff Point')
+    ax.axline((inflection_loc, 0), slope=0, color='black')
     ax.legend(loc='best')
     plt.title('Double check the cutoff point')
     plt.show()

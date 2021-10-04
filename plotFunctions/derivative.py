@@ -43,7 +43,7 @@ def getDerivatives():
     ax.legend(loc='best')
     rectprops = dict(facecolor='red', alpha=0.4)
     span = mwidgets.SpanSelector(ax, onselect, 'horizontal', rectprops=rectprops)
-    plt.title('Select the inflection point on the derivative')
+    plt.title('Select the entire capacitive current region')
     plt.show()
 
     
@@ -51,19 +51,18 @@ def getDerivatives():
     min_index = indexer(dydx_xvals, min_compval)
     max_index = indexer(dydx_xvals, max_compval)
 
-    # Calculating third derivative. Check out the recursion
+    # Calculating second derivative
     dydx_gauss = gauss_smooth(dydx[min_index:max_index])
     dydx_gauss_xval = dydx_xvals[min_index:max_index]
-    dydx3_xval = dydx_gauss_xval[:-1]
-    dydx3_xval = dydx3_xval[:-1]
-    dydx3 = differential(differential(dydx_gauss, dydx_gauss_xval, False), dydx_gauss_xval[:-1], False)
+    dydx2_xval = dydx_gauss_xval
+    dydx2 = differential(dydx_gauss, dydx2_xval, False)
     
     index = 0
-    if dydx3[0] > 0:
-        while dydx3[index] > 0:
+    if dydx2[0] > 0:
+        while dydx2[index] > 0:
             index += 1
     else:
-        while dydx3[index] < 0:
+        while dydx2[index] < 0:
             index += 1
     index = index + min_index
 
@@ -74,7 +73,7 @@ def getDerivatives():
     ax.plot(dydx_xvals, filter_dydx, color='blue', label='Savitzky-Golay Filtered Derivative')
     ax.plot(dydx_xvals[index], filter_dydx[index], marker='o', color='red')
     ax.legend(loc='best')
-    plt.title('Double check the calculated inflection point')
+    plt.title('Double check the calculated maximum in the derivative')
     plt.show()
 
     # Making a confirmation plot on the actual CV.
@@ -97,9 +96,11 @@ def differential(x, y, apply_filter):
     else:
         return dydx
 
+
 def gauss_smooth(x):
     smoothed = gaussian_filter1d(x, 10)
     return smoothed
+
 
 def rowskip(workingfile):  # cleans up all the extra stuff in the header
     file = open(workingfile, 'r')

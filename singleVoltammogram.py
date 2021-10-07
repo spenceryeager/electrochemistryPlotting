@@ -22,19 +22,28 @@ def main():
     working_file = fd.askopenfilename(
         title="Select file for plotting", initialdir=filepath)
     cv = pd.read_csv(working_file, skiprows=rowskip(working_file))
-    j = np.array(cv[' Current/A'])
-    j = j / 0.71
+    if len(cv.columns) == 2:
+        j = np.array(cv[' Current/A'])
+        j = j / 0.71
+
+    if len(cv.columns) == 3:
+        j = np.array(cv[' i2/A'])
     V = np.array(cv['Potential/V'])
     plot(V, j)
 
-# opening file, and counting how many lines are present until headers
+
+# def column_comp(comp_val, col_list):
+#     boolean_list = []
+#     for i in col_list:
+#         boolean_list.append(i == comp_val)
+#     print(boolean_list)
 
 
 def rowskip(working_file):
     file = open(working_file, 'r')
     count = 0
     for line in file:
-        if line.strip() == "Potential/V, Current/A":
+        if (line.strip() == "Potential/V, i1/A, i2/A") or (line.strip() == 'Potential/V, Current/A'):
             row = count
         count += 1
     return row

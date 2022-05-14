@@ -46,6 +46,7 @@ def highloc(voltage, highV):
 highPotentialLoc = highloc(cv['Potential/V'], highV)
 dos_array = np.array(cv[' Current/A'][0:highPotentialLoc]) # all calculations performed on this array
 energy_array = np.array(cv['Potential/V'][0:highPotentialLoc])
+v_array = energy_array
 
 default_val = mb.askyesno(title="Default values?", message="Use default values for film thickness (27nm) and working "
                                                            "area (0.71 cm^2)?")
@@ -78,7 +79,7 @@ else:
     dos_array = np.absolute(dos_array)
 
 # file saving
-vals = {"DOS (states/(eV cm^3))": dos_array, "Energy wrt Vac (eV)":energy_array}
+vals = {"DOS (states/(eV cm^3))": dos_array, "Energy wrt Vac (eV)":energy_array, "Potential (V)":v_array}
 calc_vals = pd.DataFrame(data=vals)
 
 

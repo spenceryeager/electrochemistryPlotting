@@ -22,10 +22,11 @@ def main():
     #                         prompt="Enter the path to the directory containing file of interest")
     # working_file = fd.askopenfilename(
     #     title="Select file for plotting", initialdir=filepath)
-    electrode_area = 0.71 #cm2
-    working_file = r"R:\Spencer Yeager\data\NiOx_Project\2023\08_Aug\14Aug2023_iodide-echem-nonaqu\10mM_imidazolium_iodide_run1.csv"
+    electrode_area = 0.049 #cm2
+    working_file = r"R:\Spencer Yeager\data\NiOx_Project\2023\08_Aug\17Aug2023_Ag-Wire-Ref-Test\ag-wire-fc-after-run1.csv"
     save_fig_filepath= r"R:\Spencer Yeager\group_meetings\general_group_meetings\2023\16Aug2023"
-    save_fig = os.path.join(save_fig_filepath, "IodideNonaqu_AgCl-Ref.svg")
+    save_fig = os.path.join(save_fig_filepath, "AgWire-Fc-After.svg")
+    # print(save_fig)
     cv = pd.read_csv(working_file, skiprows=rowskip(working_file))
     if len(cv.columns) == 2:
         j = np.array(cv[' Current/A'])
@@ -67,10 +68,15 @@ def plot(potential, current, save_fig):
     ax.xaxis.labelpad = 5
     ax.yaxis.labelpad = 5
     ax.tick_params(axis = 'both', direction='in', which='both', length=18, width=3)
+    
+    
     for axis in ['top','bottom','left','right']:
         ax.spines[axis].set_linewidth(3)
-    # plt.savefig(save_fig)
+    
+    
+    plt.savefig(save_fig)
     plt.show()
+
     # print(cv)
 
 

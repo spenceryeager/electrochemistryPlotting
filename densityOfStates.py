@@ -1,25 +1,39 @@
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import pandas as pd
-from tkinter import *
-import tkinter.filedialog as fd
-import tkinter.simpledialog as sd
-import tkinter.messagebox as mb
 import numpy as np
 import scipy.constants as constant
 import os
+from matplotlib import rcParams
+rcParams['font.family'] = 'sans-serif'
+rcParams['font.sans-serif'] = ['Arial']
+rcParams['font.weight'] = 'bold'
+rcParams['axes.labelweight'] = 'bold'
+rcParams['savefig.dpi'] = 300
+
 # a program to plot and calculate the density of states from a cyclic voltammogram file
 # reminder: if working on this a while from now, looking at raw data file will give all parameters asked
 # for in the prompts!
-root = Tk()
-root.withdraw()
+# root = Tk()
+# root.withdraw()
 
-workingdir = fd.askdirectory(initialdir="enter file path")
-workingfile = fd.askopenfilename(initialdir=workingdir)
+# workingdir = fd.askdirectory(initialdir="enter file path")
+# workingfile = fd.askopenfilename(initialdir=workingdir)
 
-highV = sd.askfloat(title='High Potential', prompt="Enter the high potential set")
-if highV == None:
-    mb.showerror(title="Abort", message="Program aborting")
-    quit()
+# highV = sd.askfloat(title='High Potential', prompt="Enter the high potential set")
+# if highV == None:
+#     mb.showerror(title="Abort", message="Program aborting")
+#     quit()
+
+workingfile = r"\\engr-drive.bluecat.arizona.edu\Research\Ratcliff\Spencer Yeager\data\SPECS-Project\2023\06Aug2023_StingelinPBTTTMacroscale\CV\10mVs_no_sec.csv"
+savedir = r"\\engr-drive.bluecat.arizona.edu\Research\Ratcliff\Spencer Yeager\data\SPECS-Project\2023\06Aug2023_StingelinPBTTTMacroscale\figures"
+savename = "pbttt_dos.svg"
+# below is for saving extra info
+workingdir = r"\\engr-drive.bluecat.arizona.edu\Research\Ratcliff\Spencer Yeager\data\SPECS-Project\2023\06Aug2023_StingelinPBTTTMacroscale\CV"
+highV = 1.2 # V
+area = 0.71
+d = 300 * (10**-7)
+v = 0.01 # Scan rate, V/s
 
 def rowskip(file):  # cleans up all the extra stuff in the header
     file = open(workingfile, 'r')
@@ -48,35 +62,15 @@ dos_array = np.array(cv[' Current/A'][0:highPotentialLoc]) # all calculations pe
 energy_array = np.array(cv['Potential/V'][0:highPotentialLoc])
 v_array = energy_array
 
-default_val = mb.askyesno(title="Default values?", message="Use default values for film thickness (27nm) and working "
-                                                           "area (0.71 cm^2)?")
-if default_val:
-    v = sd.askfloat(title="Scan rate", prompt="Enter the scan rate used in V/s")
-    area = 0.71
-    d = 27 * (10**-7)
+dos_array = dos_array / area
+dos_array = dos_array / (v * d)
+dos_array = dos_array / (constant.elementary_charge ** 2)
+dos_array = dos_array * constant.physical_constants['electron volt'][0]
+dos_array = np.absolute(dos_array)
 
-    dos_array = dos_array / area
-    dos_array = dos_array / (v * d)
-    dos_array = dos_array / (constant.elementary_charge ** 2)
-    dos_array = dos_array * constant.physical_constants['electron volt'][0]
-    dos_array = np.absolute(dos_array)
-    energy_scale = mb.askyesno(title="Energy Scale", message="Use eV energy scale?")
+energy_array = -(energy_array + 4.5)
+ytit = "Energy vs. vacuum (eV)"
 
-    if energy_scale:
-        energy_array = -(energy_array + 4.87)
-        ytit = "Energy vs. vacuum (eV)"
-    else:
-        ytit = "Potential (V)"
-else:
-    v = sd.askfloat(title="Scan rate", prompt="Enter the scan rate used in V/s")
-    area =sd.askfloat(title="Area", prompt="enter the working area on the electrode in cm^2")
-    d = sd.askfloat(title="Thickness", prompt="Enter the thickness of the film in nm")
-    d = d * (10 ** -7) # conversion to cm
-    dos_array = dos_array / area
-    dos_array = dos_array / (v * d)
-    dos_array = dos_array / (constant.elementary_charge ** 2)
-    dos_array = dos_array * constant.physical_constants['electron volt'][0]
-    dos_array = np.absolute(dos_array)
 
 # file saving
 vals = {"DOS (states/(eV cm^3))": dos_array, "Energy wrt Vac (eV)":energy_array, "Potential (V)":v_array}
@@ -103,8 +97,20 @@ readme.write("area (cm^2) = " + str(area) + "\nfilm thickness (nm) = " + str(d) 
 readme.close()
 
 # plotting
-plt.rc('font', size=12)
-plt.plot(dos_array, energy_array, color='red')
-plt.xlabel(r'Density of States (states eV$^{-1}$ cm$^{-3}$)')
-plt.ylabel(ytit)
+fontsize = 40
+mpl.rcParams.update({'font.size': fontsize, 'figure.autolayout': True})
+fig, ax = plt.subplots(figsize=(14,10), tight_layout=True)
+ax.plot(dos_array / 10**20, energy_array, color="black", linewidth=7)
+ax.set_xlabel(r'Density of States (states eV$^{-1}$ cm$^{-3}$) x10$^{20}$')
+ax.set_ylabel(ytit)
+ax.xaxis.labelpad = 5
+ax.yaxis.labelpad = 5
+ax.tick_params(axis = 'both', direction='in', which='both', length=18, width=3)
+
+
+for axis in ['top','bottom','left','right']:
+    ax.spines[axis].set_linewidth(3)
+
+plt.savefig(os.path.join(savedir, savename))
 plt.show()
+

@@ -23,9 +23,11 @@ def main():
     # working_file = fd.askopenfilename(
     #     title="Select file for plotting", initialdir=filepath)
     electrode_area = 0.049 #cm2
-    working_file = r"R:\Spencer Yeager\data\NiOx_Project\2023\08_Aug\17Aug2023_Ag-Wire-Ref-Test\ag-wire-fc-after-run1.csv"
-    save_fig_filepath= r"R:\Spencer Yeager\group_meetings\general_group_meetings\2023\16Aug2023"
-    save_fig = os.path.join(save_fig_filepath, "AgWire-Fc-After.svg")
+    reference_electrode = 'Potential (V) vs. Fc'
+    reference_correction = 0.5
+    working_file = r"R:\Spencer Yeager\data\NiOx_Project\2023\08_Aug\17Aug2023_Ag-Wire-Ref-Test\ag-wire-I-run2.csv"
+    save_fig_filepath= r"R:\Spencer Yeager\data\NiOx_Project\2023\08_Aug\17Aug2023_Ag-Wire-Ref-Test\figures"
+    save_fig = os.path.join(save_fig_filepath, "iodide_on_pt.svg")
     # print(save_fig)
     cv = pd.read_csv(working_file, skiprows=rowskip(working_file))
     if len(cv.columns) == 2:
@@ -36,7 +38,7 @@ def main():
     if len(cv.columns) == 3:
         j = np.array(cv[' i2/A'])
     V = np.array(cv['Potential/V'])
-    plot(V, j, save_fig)
+    plot(V, j, reference_electrode, reference_correction, save_fig)
 
 
 # def column_comp(comp_val, col_list):
@@ -56,14 +58,14 @@ def rowskip(working_file):
     return row
 
 
-def plot(potential, current, save_fig):
+def plot(potential, current, reference_electrode, reference_correction, save_fig):
     fontsize = 40
     mpl.rcParams.update({'font.size': fontsize, 'figure.autolayout': True})
     fig, ax = plt.subplots(figsize=(14,10), tight_layout=True)
     plt.rc('font', size=12)
-    ax.plot(potential, current, color='red', linewidth=7)
-    ax.set_xlim(max(potential + 0.1), min(potential - 0.1))
-    ax.set_xlabel('Potential (V) vs. Ag/AgCl')
+    ax.plot(potential - reference_correction, current, color='black', linewidth=7)
+    ax.set_xlim(max(potential + 0.1 - reference_correction), min(potential - 0.1 - reference_correction))
+    ax.set_xlabel(reference_electrode)
     ax.set_ylabel('Current Density ($\mu$A/cm$^{2}$)')
     ax.xaxis.labelpad = 5
     ax.yaxis.labelpad = 5
@@ -74,7 +76,7 @@ def plot(potential, current, save_fig):
         ax.spines[axis].set_linewidth(3)
     
     
-    plt.savefig(save_fig)
+    plt.savefig(save_fig, tight_layout=True)
     plt.show()
 
     # print(cv)

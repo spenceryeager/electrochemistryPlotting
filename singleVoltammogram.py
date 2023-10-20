@@ -22,23 +22,45 @@ def main():
     #                         prompt="Enter the path to the directory containing file of interest")
     # working_file = fd.askopenfilename(
     #     title="Select file for plotting", initialdir=filepath)
-    electrode_area = 0.049 #cm2
-    reference_electrode = 'Potential (V) vs. Fc'
-    reference_correction = 0.5
-    working_file = r"R:\Spencer Yeager\data\NiOx_Project\2023\08_Aug\17Aug2023_Ag-Wire-Ref-Test\ag-wire-I-run2.csv"
-    save_fig_filepath= r"R:\Spencer Yeager\data\NiOx_Project\2023\08_Aug\17Aug2023_Ag-Wire-Ref-Test\figures"
-    save_fig = os.path.join(save_fig_filepath, "iodide_on_pt.svg")
-    # print(save_fig)
-    cv = pd.read_csv(working_file, skiprows=rowskip(working_file))
-    if len(cv.columns) == 2:
-        j = np.array(cv[' Current/A'])
-        j = j / electrode_area
-        j = j * (10**6)
 
-    if len(cv.columns) == 3:
-        j = np.array(cv[' i2/A'])
-    V = np.array(cv['Potential/V'])
-    plot(V, j, reference_electrode, reference_correction, save_fig)
+    # instrument = "ch instruments"
+    instrument = "gamry"
+
+    electrode_area = 0.049 #cm2
+    reference_electrode = 'Potential (V) vs. Ag Wire'
+    reference_correction = 0
+    working_file = r"R:\Spencer Yeager\data\NiOx_Project\2023\10_Oct\03Oct2023_NiOx-Untreated-Iodide\NiOx-Iodide-Echem\Untreatee\ag-wire-calib\Ag-Wire-Fc-Calib-Before.DTA"
+    save_fig_filepath= r"R:\Spencer Yeager\data\NiOx_Project\2023\10_Oct\03Oct2023_NiOx-Untreated-Iodide\NiOx-Iodide-Echem\Untreatee\figures"
+    save_fig = os.path.join(save_fig_filepath, "fc_calib_before.svg")
+    # print(save_fig)
+
+    if instrument == "ch instruments":
+        cv = pd.read_csv(working_file, skiprows=rowskip(working_file))
+        if len(cv.columns) == 2:
+            j = np.array(cv[' Current/A'])
+            j = j / electrode_area
+            j = j * (10**6)
+
+        if len(cv.columns) == 3:
+            j = np.array(cv[' i2/A'])
+        V = np.array(cv['Potential/V'])
+        plot(V, j, reference_electrode, reference_correction, save_fig)
+   
+    elif instrument == "gamry":
+        cv = pd.read_csv(working_file, skiprows=60, skipfooter=4, sep='\t')
+        print(cv.head())
+        j = np.array(cv['Im'])
+    
+        print(j)
+        # j = j / electrode_area
+        # j = j * (10**6)
+        # V = np.array(cv['Vf'])
+        # plot(V, j, reference_electrode, reference_correction, save_fig)
+
+
+    
+    else:
+        print('this will never happen')
 
 
 # def column_comp(comp_val, col_list):

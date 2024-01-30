@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
 import scipy.integrate as integrate
+import scipy.constants as constant
 
 # Note: This approximation is coming from this Nature Comms paper:
 # https://www.nature.com/articles/s41467-017-01264-2
@@ -21,10 +22,12 @@ def main():
 
     # probe constants to determine reorganization energy
     r = 3.32 # Angstrom,  reactant radius. From literature
-    R = 1.66 # distance from reactant center to image charge on electrode surface. There are assumptions baked in here about polymer acting like metal electrode.
+    R = 1.66 # Angstrom, distance from reactant center to image charge on electrode surface. There are assumptions baked in here about polymer acting like metal electrode.
     static_dielectric = 66.1 # from literature
+    optical_dielectric = 64
+    delta_optical_static_dielectric = 0.482
 
-    reorg = reorg_energy()
+    reorg = reorg_energy(r, R, delta_optical_static_dielectric)
 
     A = 0.4 #cm2
     kt = (1.6 * 10**-22) # cm4 s-1
@@ -36,9 +39,14 @@ def main():
     # plt.show()
 
 
-def reorg_energy():
+def reorg_energy(r, R, delta_optical_static_dielectric):
     # I don't think Ferrocene has a huge inner-sphere reorganization energy contribution, so I will only approximate outer sphere
-    print('hello')
+    # N = constant.physical_constants["Avogadro constant"][0]
+    e = constant.physical_constants["elementary charge"][0]
+    vac_permittivity = 55.26349406 # e^2 * eV ^-1 um^-1
+
+    os_reorg = ((e**2) / (8)) * ((r**-1) - (R**-1)) * (delta_optical_static_dielectric)
+    print(os_reorg)
 
 
 def gerischer_approx(A, conc, kt, dos, ef, eo, reorg):

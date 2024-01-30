@@ -16,13 +16,17 @@ def main():
     lb_index = dos_data.index[dos_data['Energy wrt Vac (eV)'] == lower_bound]
     up_index = dos_data.index[dos_data['Energy wrt Vac (eV)'] == upper_bound]
     ef = get_fermi(dos_data[lb_index[0]:up_index[0]], up_index[0], lb_index[0])
+    A = 0.4 #cm2
+    kt = (1.6 * 10**-22) # cm4 s-1
+    concentration = 3 # mM
+
     # fig, ax = plt.subplots()
     # ax.plot(dos_data['DOS (states/(eV cm^3))'][lb_index[0]:up_index[0]] / 10**21, dos_data['Energy wrt Vac (eV)'][lb_index[0]:up_index[0]])
     # plt.hlines(y=ef, xmin=0, xmax=5)
     # plt.show()
 
 
-def gerischer_approx(A, kt, dos, ef, eo, reorg):
+def gerischer_approx(A, conc, kt, dos, ef, eo, reorg):
     print('hello')
 
 

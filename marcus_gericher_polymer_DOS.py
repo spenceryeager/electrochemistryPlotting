@@ -9,13 +9,23 @@ import scipy.integrate as integrate
 # Equation 5 specifically. 
 
 def main():
-    data_path = r"C:\Users\yeage\Documents\test-polymer-data\p3ht_calculated_DOS.csv"
+    # Lots of parameters to change here
+    data_path = r"C:\Users\spenceryeager\Documents\example_dos\p3ht_calculated_DOS.csv"
     dos_data = pd.read_csv(data_path)
     lower_bound = -4.6
     upper_bound = -5.8
-    lb_index = dos_data.index[dos_data['Energy wrt Vac (eV)'] == lower_bound]
-    up_index = dos_data.index[dos_data['Energy wrt Vac (eV)'] == upper_bound]
-    ef = get_fermi(dos_data[lb_index[0]:up_index[0]], up_index[0], lb_index[0])
+    lb_index = dos_data.index[dos_data['Energy wrt Vac (eV)'] == lower_bound][0]
+    up_index = dos_data.index[dos_data['Energy wrt Vac (eV)'] == upper_bound][0]
+
+    ef = get_fermi(dos_data[lb_index:up_index], up_index, lb_index)
+
+    # probe constants to determine reorganization energy
+    r = 3.32 # Angstrom,  reactant radius. From literature
+    R = 1.66 # distance from reactant center to image charge on electrode surface. There are assumptions baked in here about polymer acting like metal electrode.
+    static_dielectric = 66.1 # from literature
+
+    reorg = reorg_energy()
+
     A = 0.4 #cm2
     kt = (1.6 * 10**-22) # cm4 s-1
     concentration = 3 # mM
@@ -24,6 +34,11 @@ def main():
     # ax.plot(dos_data['DOS (states/(eV cm^3))'][lb_index[0]:up_index[0]] / 10**21, dos_data['Energy wrt Vac (eV)'][lb_index[0]:up_index[0]])
     # plt.hlines(y=ef, xmin=0, xmax=5)
     # plt.show()
+
+
+def reorg_energy():
+    # I don't think Ferrocene has a huge inner-sphere reorganization energy contribution, so I will only approximate outer sphere
+    print('hello')
 
 
 def gerischer_approx(A, conc, kt, dos, ef, eo, reorg):

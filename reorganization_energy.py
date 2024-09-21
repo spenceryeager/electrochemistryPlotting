@@ -14,12 +14,15 @@ def main():
     re = (2 * a) # twice the distance from the image charge at the interface to the redox probe. I am assuming this to be twice the distance of the radius (not accounting for solvent shell)
     static_dielectric = 64
     frequency_dielectric = 5.5
-    reorganization_energy(a, re, static_dielectric, frequency_dielectric)
+    reorg_val = reorganization_energy(a, re, static_dielectric, frequency_dielectric)
+    print(reorg_val)
+
 
 
 def reorganization_energy(a, re, static_dielectric, frequency_dielectric):
     inner_sphere()
-    outer_sphere(a, re, static_dielectric, frequency_dielectric)
+    outersphere_val = outer_sphere(a, re, static_dielectric, frequency_dielectric)
+    return outersphere_val
 
  
 def inner_sphere():
@@ -45,7 +48,8 @@ def outer_sphere(a, re, static_dielectric, frequency_dielectric):
     print(final_product, "J mol^-1")
     
     final_product_ev = final_product * (6.24 * 10**18) / avogadro
-    print(round(final_product_ev, 2), "eV")
+    return(final_product_ev)
+   
     
 
 

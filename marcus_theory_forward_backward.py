@@ -15,10 +15,31 @@ def main():
     reorganization_energy = 0.39 # eV. Calculated from reorganization_energy.py
     formal_potential = -5.05 # eV. Of Ferrocene, from literature.
     temperature = 298 # K
+    ef = fermi_level_polymer(polymer_dos_load)
 
 
-def fermi(e, ef, temperature):
-    fermi = 1 + np.exp()
+def fermi_dirac_distribution(e, ef, temperature):
+    fermi = 1 + np.exp((e - ef) * np.reciprocal(temperature * constants.physical_constants['Boltzmann constant in eV/K'][0]))
+    return np.reciprocal(fermi)
+
+
+def fermi_level_polymer(polymer_dos_df):
+    integral_dos = np.trapz(polymer_dos_df['DOS (states/(eV cm^3))'], x=polymer_dos_df['Energy wrt Vac (eV)'], dx = 0.001)
+    fermi_level_integral_val = integral_dos / 2
+    index = 0
+    final_index = int(len(polymer_dos_df))
+    calculated_fermi_level_integral = 0
+
+
+    while np.abs(calculated_fermi_level_integral) <= np.abs(fermi_level_integral_val):
+        calculated_fermi_level_integral = np.trapz(polymer_dos_df['DOS (states/(eV cm^3))'][0:index], x=polymer_dos_df['Energy wrt Vac (eV)'][0:index], dx = 0.001)
+        index+=1
+
+    
+    
+    return (polymer_dos_df['Energy wrt Vac (eV)'].iloc[index])
+
+
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.constants as constants
+import scipy.integrate as integrate
 
 # This is used to calculate the forward and backward rate coefficients in conductive polymers using Marcus Theory
 # Basis for this script is from this paper, eqns 3 & 4, Figure 3.
@@ -16,6 +17,35 @@ def main():
     formal_potential = -5.05 # eV. Of Ferrocene, from literature.
     temperature = 298 # K
     ef = fermi_level_polymer(polymer_dos_load)
+    preintegral = preintergral_term(polymer_dos_load['Energy wrt Vac (eV)'], polymer_dos_load['DOS (states/(eV cm^3))'], reorganization_energy, formal_potential, temperature, ef)
+    integral_term = integrate.cumulative_trapezoid(preintegral, dx=0.001)
+    integral_term = integral_term * (1.6*10**-22)
+    print(integral_term)
+    fig, ax = plt.subplots()
+    ax.plot(polymer_dos_load['Energy wrt Vac (eV)'][1:], integral_term)
+    plt.show()
+    # final_index = int(len(polymer_dos_load))
+    
+
+    # kfs = integrate.cumulative_trapezoid(kf, x=polymer_dos_load['Energy wrt Vac (eV)'], dx=0.001)
+    # print(kfs)
+  
+
+
+def preintergral_term(polymer_energy, polymer_dos, reorganization_energy, formal_potential, temperature, ef):
+    term1 = polymer_dos
+    # print(term1)
+    term2 = (1 - fermi_dirac_distribution(polymer_energy, ef, temperature))
+    # print(term2)
+    term3_num = np.negative(polymer_energy - (2.718 * formal_potential) - reorganization_energy) ** 2
+    term3_denom = 4 * reorganization_energy * constants.physical_constants['Boltzmann constant in eV/K'][0] * temperature
+    # print(term3_denom)
+    # term3 = np.exp((-(polymer_energy - (2.718 * formal_potential) - reorganization_energy)**2) * np.reciprocal(4 * reorganization_energy * constants.physical_constants['Boltzmann constant in eV/K'][0] * temperature))
+    # print(term3_num)
+    term3 = term3_num / term3_denom
+    # print(term3)
+    return term1 * term2 * term3
+
 
 
 def fermi_dirac_distribution(e, ef, temperature):

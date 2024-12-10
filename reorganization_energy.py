@@ -10,10 +10,10 @@ import scipy.constants as constants
 
 def main():
     # outersphere parameters:
-    a = 1.66 * 10**-10 # radius of redox probe used, in meters
-    re = (2 * a) # twice the distance from the image charge at the interface to the redox probe. I am assuming this to be twice the distance of the radius (not accounting for solvent shell)
-    static_dielectric = 64
-    frequency_dielectric = 5.5
+    a = 3.66 * 10**-10 # radius of redox probe used, in meters
+    re = (2 * (8.91* 10**-10)) # twice the distance from the image charge at the interface to the redox probe. This is considered the 2 x (SOLVENT DIAMETER + ION RADIUS)
+    static_dielectric = 37.5
+    frequency_dielectric = 1.79
     reorg_val = reorganization_energy(a, re, static_dielectric, frequency_dielectric)
     print(reorg_val)
 
@@ -46,7 +46,6 @@ def outer_sphere(a, re, static_dielectric, frequency_dielectric):
     
     final_product = term1 * term2 * term3 # note: as is, this is in J / mol
     print(final_product, "J mol^-1")
-    
     final_product_ev = final_product * (6.24 * 10**18) / avogadro
     return(final_product_ev)
    

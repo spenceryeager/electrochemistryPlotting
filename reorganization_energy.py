@@ -34,7 +34,7 @@ def inner_sphere():
 
 
 def outer_sphere(a, re, static_dielectric, frequency_dielectric):
-    # this component is taken from this publication: https://doi.org/10.1016/0022-0728(89)85030-2
+    # this component is taken from this publication: https://doi.org/10.1016/0022-0728(89)85030-2 and explained further in this one https://www.sciencedirect.com/science/article/pii/0009261491905032
 
     avogadro = constants.physical_constants['Avogadro constant'][0] # molecules / mol
     # print(avogadro)

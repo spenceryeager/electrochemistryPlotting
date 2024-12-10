@@ -11,29 +11,27 @@ rcParams['font.weight'] = 'bold'
 rcParams['axes.labelweight'] = 'bold'
 rcParams['savefig.dpi'] = 300
 
-# a program to plot and calculate the density of states from a cyclic voltammogram file
-# reminder: if working on this a while from now, looking at raw data file will give all parameters asked
-# for in the prompts!
-# root = Tk()
-# root.withdraw()
+# A program to calculate the potential-dependent density of states, DOS(E), of a polymer electrode from a cyclic voltammetry file. 
 
-# workingdir = fd.askdirectory(initialdir="enter file path")
-# workingfile = fd.askopenfilename(initialdir=workingdir)
+# This only works for CH Instruments generated files. Can be used as a template for other instrument manufacturers
 
-# highV = sd.askfloat(title='High Potential', prompt="Enter the high potential set")
-# if highV == None:
-#     mb.showerror(title="Abort", message="Program aborting")
-#     quit()
+# reminder: if working on this a while from now, looking at raw data file will give all parameters asked for in the prompts!
 
-workingfile = r"\\engr-drive.bluecat.arizona.edu\Research\Ratcliff\Spencer Yeager\data\SPECS-Project\2023\06Aug2023_StingelinPBTTTMacroscale\CV\10mVs_no_sec.csv"
-savedir = r"\\engr-drive.bluecat.arizona.edu\Research\Ratcliff\Spencer Yeager\data\SPECS-Project\2023\06Aug2023_StingelinPBTTTMacroscale\figures"
-savename = "pbttt_dos.svg"
-# below is for saving extra info
-workingdir = r"\\engr-drive.bluecat.arizona.edu\Research\Ratcliff\Spencer Yeager\data\SPECS-Project\2023\06Aug2023_StingelinPBTTTMacroscale\CV"
-highV = 1.2 # V
-area = 0.71
-d = 300 * (10**-7)
-v = 0.01 # Scan rate, V/s
+def main():
+    workingfile = r"select file to use"
+    savedir = r"Select a directory to save the output csv"
+
+    # Set parameters below for polymer
+    starting_index = 0 # the starting index of sweep to be analyzed
+    final_index = 1 # the final index of the sweep to be analyzed
+    area = 0.71 # in cm^2
+    d = 300 * (10**-7) # film thickness. Can get this from profilometry of the polymer film
+    v = 0.01 # scan rate of the system, V/s
+
+    cv = pd.read_csv(workingfile, skiprows=rowskip(workingfile))
+    analyze_sweep = cv[starting_index:final_index]
+
+
 
 def rowskip(file):  # cleans up all the extra stuff in the header
     file = open(workingfile, 'r')
@@ -45,16 +43,15 @@ def rowskip(file):  # cleans up all the extra stuff in the header
     return row
 
 
-cv = pd.read_csv(workingfile, skiprows=rowskip(workingfile))
 
 
-def highloc(voltage, highV):
-    count = 0
-    for i in voltage:
-        if i == highV:
-            loc = count
-            return loc
-        count += 1
+# def highloc(voltage, highV):  # phased this section out. Will keep it in case I ever need to use it again.
+#     count = 0
+#     for i in voltage:
+#         if i == highV:
+#             loc = count
+#             return loc
+#         count += 1
 
 
 highPotentialLoc = highloc(cv['Potential/V'], highV)
@@ -96,21 +93,24 @@ readme.write("Here are the parameters used to generate this data: \n")
 readme.write("area (cm^2) = " + str(area) + "\nfilm thickness (nm) = " + str(d) + "\nscan rate (V/s) = " + str(v))
 readme.close()
 
-# plotting
-fontsize = 40
-mpl.rcParams.update({'font.size': fontsize, 'figure.autolayout': True})
-fig, ax = plt.subplots(figsize=(14,10), tight_layout=True)
-ax.plot(dos_array / 10**20, energy_array, color="black", linewidth=7)
-ax.set_xlabel(r'Density of States (states eV$^{-1}$ cm$^{-3}$) x10$^{20}$')
-ax.set_ylabel(ytit)
-ax.xaxis.labelpad = 5
-ax.yaxis.labelpad = 5
-ax.tick_params(axis = 'both', direction='in', which='both', length=18, width=3)
+# # plotting
+# fontsize = 40
+# mpl.rcParams.update({'font.size': fontsize, 'figure.autolayout': True})
+# fig, ax = plt.subplots(figsize=(14,10), tight_layout=True)
+# ax.plot(dos_array / 10**20, energy_array, color="black", linewidth=7)
+# ax.set_xlabel(r'Density of States (states eV$^{-1}$ cm$^{-3}$) x10$^{20}$')
+# ax.set_ylabel(ytit)
+# ax.xaxis.labelpad = 5
+# ax.yaxis.labelpad = 5
+# ax.tick_params(axis = 'both', direction='in', which='both', length=18, width=3)
 
 
-for axis in ['top','bottom','left','right']:
-    ax.spines[axis].set_linewidth(3)
+# for axis in ['top','bottom','left','right']:
+#     ax.spines[axis].set_linewidth(3)
 
-plt.savefig(os.path.join(savedir, savename))
-plt.show()
+# plt.savefig(os.path.join(savedir, savename))
+# plt.show()
+
+if __name__ == "__main__":
+    main()
 

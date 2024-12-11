@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import os
 import matplotlib.pyplot as plt
 import scipy.constants as constants
 import scipy.integrate as integrate
@@ -15,7 +16,9 @@ def main():
     polymer_red_dos = r"E:\RDrive_Backup\Spencer Yeager\papers\paper4_pbtttt_p3ht_transfer_kinetics\worked-up-data\calculated_DOS\p3ht_reduction_DOS.csv"
     polymer_dos_load = pd.read_csv(polymer_dos)
     polymyer_dos_red_load = pd.read_csv(polymer_red_dos)
-    reorganization_energy = 0.39 # eV. Calculated from reorganization_energy.py
+    kf_filename = "kf_dmso.csv"
+    kb_filename =  "kb_dmso.csv"
+    reorganization_energy = 0.6806347383955402 # eV. Calculated from reorganization_energy.py
     formal_potential = -5.05 # eV. Of Ferrocene, from literature.
     temperature = 298 # K
     conc_red = 0.003 # concentration of reductant in electrolyte. Molar
@@ -52,6 +55,15 @@ def main():
     kf = integrate.cumulative_trapezoid(combined_kf_terms, x=polymer_dos_load['Energy wrt Vac (eV)'], dx=0.001)
     kf = kf * (1.6*10**-22) # time constant
     kf = np.abs(kf)
+
+    data_ox = {'Energy (eV)': polymer_dos_load['Energy wrt Vac (eV)'][1:], "Kf (cm s^-1)":kf}
+    kf_df = pd.DataFrame(data_ox).reset_index(drop=True)
+    
+    data_red = {'Energy (eV)': polymyer_dos_red_load['Energy wrt Vac (eV)'][1:], "Kb (cm s^-1)":kb}
+    kb_df = pd.DataFrame(data_red).reset_index(drop=True)
+
+    kf_df.to_csv(os.path.join(r"E:\Electrochemical_Parameters\kf_kb_reorg", kf_filename))
+    kb_df.to_csv(os.path.join(r"E:\Electrochemical_Parameters\kf_kb_reorg", kb_filename))
 
     fig, ax = plt.subplots()
     ax.plot(polymyer_dos_red_load['Energy wrt Vac (eV)'][1:], kb)

@@ -18,22 +18,30 @@ rcParams['savefig.dpi'] = 300
 # reminder: if working on this a while from now, looking at raw data file will give all parameters asked for in the prompts!
 
 def main():
-    workingfile = r"select file to use"
-    savedir = r"Select a directory to save the output csv"
+    workingfile = r"file"
+    savedir = r"savedir"
+    cv = pd.read_csv(workingfile, skiprows=rowskip(workingfile))
+    number_of_sweeps = 2 # number of FULL cycles in the polymer
+    ox_sweep_first = True # is the oxidation sweep first? True. Reduction sweep first? False
+    ox_subset, red_subset = get_voltammograms(cv, number_of_sweeps, ox_sweep_first) # These are used to get the DOS(E) for the anodic and cathodic sweeps.
 
     # Set parameters below for polymer
-    starting_index = 0 # the starting index of sweep to be analyzed
-    final_index = 1 # the final index of the sweep to be analyzed
     area = 0.71 # in cm^2
     d = 300 * (10**-7) # film thickness. Can get this from profilometry of the polymer film
     v = 0.01 # scan rate of the system, V/s
+    ev_conversion_factor = 4.5 # this conversion factor is for converting AgCl potentials to eV
 
-    cv = pd.read_csv(workingfile, skiprows=rowskip(workingfile))
-    analyze_sweep = cv[starting_index:final_index]
+    polymer_dos_oxidation = dos_oxidation(ox_subset, area, d, v, ev_conversion_factor)
+    polymer_dos_reduction = dos_reduction(red_subset, area, d, v, ev_conversion_factor)
+
+    if ox_sweep_first:
+        polymer_dos_reduction = polymer_dos_reduction.reindex(index = polymer_dos_reduction.index[::-1]).reset_index(drop=True)
+
+    polymer_dos_reduction.to_csv(os.path.join(savedir, "p3ht_reduction_DOS.csv"))
+    polymer_dos_oxidation.to_csv(os.path.join(savedir, "p3ht_oxidation_DOS.csv"))
 
 
-
-def rowskip(file):  # cleans up all the extra stuff in the header
+def rowskip(workingfile):  # cleans up all the extra stuff in the header
     file = open(workingfile, 'r')
     count1 = 0
     for line in file:
@@ -43,6 +51,20 @@ def rowskip(file):  # cleans up all the extra stuff in the header
     return row
 
 
+def get_voltammograms(cv, number_of_sweeps, ox_sweep_first):
+    number_of_points = len(cv)
+    length_of_sweep = int(number_of_points / number_of_sweeps)
+    # By default, I typically record TWO full cycles at low scan rates. I will go in later and add a better system if there are 1, 3, 4, etc. 
+    red_ox_sweep_length = int(length_of_sweep / 2)
+
+    if ox_sweep_first:
+        ox_subset = cv[length_of_sweep : length_of_sweep + red_ox_sweep_length]
+        red_subset = cv[length_of_sweep + red_ox_sweep_length :]
+    else:
+        red_subset = cv[length_of_sweep : length_of_sweep + red_ox_sweep_length]
+        ox_subset = cv[length_of_sweep + red_ox_sweep_length :]
+
+    return ox_subset, red_subset
 
 
 # def highloc(voltage, highV):  # phased this section out. Will keep it in case I ever need to use it again.
@@ -54,24 +76,38 @@ def rowskip(file):  # cleans up all the extra stuff in the header
 #         count += 1
 
 
-highPotentialLoc = highloc(cv['Potential/V'], highV)
-dos_array = np.array(cv[' Current/A'][0:highPotentialLoc]) # all calculations performed on this array
-energy_array = np.array(cv['Potential/V'][0:highPotentialLoc])
-v_array = energy_array
+def dos_oxidation(analyze_sweep, area, d, v, ev_conversion_factor):
+    ev_scale = analyze_sweep['Potential/V']
+    ev_scale = -(ev_scale + 4.5)
 
-dos_array = dos_array / area
-dos_array = dos_array / (v * d)
-dos_array = dos_array / (constant.elementary_charge ** 2)
-dos_array = dos_array * constant.physical_constants['electron volt'][0]
-dos_array = np.absolute(dos_array)
+    dos_array = analyze_sweep[' Current/A']
+    dos_array = dos_array / area
+    dos_array = dos_array / (v * d)
+    dos_array = dos_array / (constant.elementary_charge ** 2)
+    dos_array = dos_array * constant.physical_constants['electron volt'][0]
+    dos_array = dos_array.clip(upper=0)
+    dos_array = np.absolute(dos_array)
 
-energy_array = -(energy_array + 4.5)
-ytit = "Energy vs. vacuum (eV)"
+    dos_data = {'Energy (eV)' : ev_scale, 'DOS(E) (states / eV cm3)': dos_array}
+    dos_df = pd.DataFrame(dos_data).reset_index(drop=True)
+    return dos_df
 
 
-# file saving
-vals = {"DOS (states/(eV cm^3))": dos_array, "Energy wrt Vac (eV)":energy_array, "Potential (V)":v_array}
-calc_vals = pd.DataFrame(data=vals)
+def dos_reduction(analyze_sweep, area, d, v, ev_conversion):
+    ev_scale = analyze_sweep['Potential/V']
+    ev_scale = -(ev_scale + 4.5)
+
+    dos_array = analyze_sweep[' Current/A']
+    dos_array = dos_array / area
+    dos_array = dos_array / (v * d)
+    dos_array = dos_array / (constant.elementary_charge ** 2)
+    dos_array = dos_array * constant.physical_constants['electron volt'][0]
+    dos_array = dos_array.clip(lower=0)
+    dos_array = np.absolute(dos_array)
+
+    dos_data = {'Energy (eV)' : ev_scale, 'DOS(E) (states / eV cm3)': dos_array}
+    dos_df = pd.DataFrame(dos_data).reset_index(drop=True)
+    return dos_df
 
 
 def makefile(workingdir, newdir, filename):
@@ -83,34 +119,5 @@ def makefile(workingdir, newdir, filename):
     return filepath
 
 
-calc_vals.to_csv(makefile(workingdir, "calculated_DOS", "calculated_DOS.csv"))
-
-readme = open(makefile(workingdir, "calculated_DOS", "readme.txt"), 'w')
-readme.write("Analysis code written by Spencer Yeager, University of Arizona \n")
-readme.write("Find the source code here: https://github.com/spenceryeager/electrochemistryPlotting \n")
-readme.write("densityOfStates.py \n")
-readme.write("Here are the parameters used to generate this data: \n")
-readme.write("area (cm^2) = " + str(area) + "\nfilm thickness (nm) = " + str(d) + "\nscan rate (V/s) = " + str(v))
-readme.close()
-
-# # plotting
-# fontsize = 40
-# mpl.rcParams.update({'font.size': fontsize, 'figure.autolayout': True})
-# fig, ax = plt.subplots(figsize=(14,10), tight_layout=True)
-# ax.plot(dos_array / 10**20, energy_array, color="black", linewidth=7)
-# ax.set_xlabel(r'Density of States (states eV$^{-1}$ cm$^{-3}$) x10$^{20}$')
-# ax.set_ylabel(ytit)
-# ax.xaxis.labelpad = 5
-# ax.yaxis.labelpad = 5
-# ax.tick_params(axis = 'both', direction='in', which='both', length=18, width=3)
-
-
-# for axis in ['top','bottom','left','right']:
-#     ax.spines[axis].set_linewidth(3)
-
-# plt.savefig(os.path.join(savedir, savename))
-# plt.show()
-
 if __name__ == "__main__":
     main()
-

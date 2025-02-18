@@ -12,13 +12,18 @@ import scipy.integrate as integrate
 
 def main():
     # Constants!
-    polymer_dos = r"E:\RDrive_Backup\Spencer Yeager\papers\paper4_pbtttt_p3ht_transfer_kinetics\worked-up-data\calculated_DOS\p3ht_oxidation_DOS.csv"
-    polymer_red_dos = r"E:\RDrive_Backup\Spencer Yeager\papers\paper4_pbtttt_p3ht_transfer_kinetics\worked-up-data\calculated_DOS\p3ht_reduction_DOS.csv"
+    polymer_dos = r"E:\RDrive_Backup\Spencer Yeager\papers\paper3_pbttt_annealing_kinetics\worked_up_data\nanoribbon\NewDOS_2025\nanoribbon_oxidation_DOS.csv"
+    polymer_red_dos = r"E:\RDrive_Backup\Spencer Yeager\papers\paper3_pbttt_annealing_kinetics\worked_up_data\nanoribbon\NewDOS_2025\nanoribbon_reduction_DOS.csv"
+
+    save_file_loc = r"E:\RDrive_Backup\Spencer Yeager\papers\paper3_pbttt_annealing_kinetics\worked_up_data\nanoribbon\kf_kb"
+    kf_filename = "kf_nanoribbon.csv"
+    kb_filename =  "kb_nanoribbon.csv"
+
+
     polymer_dos_load = pd.read_csv(polymer_dos)
     polymyer_dos_red_load = pd.read_csv(polymer_red_dos)
-    kf_filename = "kf_dmso.csv"
-    kb_filename =  "kb_dmso.csv"
-    reorganization_energy = 0.6806347383955402 # eV. Calculated from reorganization_energy.py
+
+    reorganization_energy = 1.08 # eV. Calculated from reorganization_energy.py
     formal_potential = -5.05 # eV. Of Ferrocene, from literature.
     temperature = 298 # K
     conc_red = 0.003 # concentration of reductant in electrolyte. Molar
@@ -30,44 +35,44 @@ def main():
     print(ef_red)
 
     # Fermi stuff for the Kf
-    fermi_dirac = fermi_dirac_distribution(polymer_dos_load['Energy wrt Vac (eV)'], ef, temperature) 
+    fermi_dirac = fermi_dirac_distribution(polymer_dos_load['Energy (eV)'], ef, temperature) 
     subtracted_fermi = (1 - fermi_dirac) # Use this one for determining the kf
 
     # Fermi stuff for the Kb
-    fermi_dirac_kb = fermi_dirac_distribution(polymyer_dos_red_load['Energy wrt Vac (eV)'], ef_red, temperature) 
+    fermi_dirac_kb = fermi_dirac_distribution(polymyer_dos_red_load['Energy (eV)'], ef_red, temperature) 
 
 
     # Electrolyte DOS section
-    electrolyte_dos_ox = dos_estimate_ox(reorganization_energy, conc_ox, temperature, formal_potential, polymer_dos_load['Energy wrt Vac (eV)']) # Use this one for determining kf. Oxidant is species being REDUCED.
+    electrolyte_dos_ox = dos_estimate_ox(reorganization_energy, conc_ox, temperature, formal_potential, polymer_dos_load['Energy (eV)']) # Use this one for determining kf. Oxidant is species being REDUCED.
 
-    electrolyte_dos_red = dos_estimate_red(reorganization_energy, conc_red, temperature, formal_potential, polymer_dos_load['Energy wrt Vac (eV)']) # Use this one for determining the kf. Gerischer language is sort of inversed - this is the REDUCTANT DOS(E), i.e. the species that gets oxidized
+    electrolyte_dos_red = dos_estimate_red(reorganization_energy, conc_red, temperature, formal_potential, polymer_dos_load['Energy (eV)']) # Use this one for determining the kf. Gerischer language is sort of inversed - this is the REDUCTANT DOS(E), i.e. the species that gets oxidized
 
     # Kb section
     polymyer_dos_red_load = polymyer_dos_red_load.reindex(index = polymyer_dos_red_load.index[::-1]).reset_index(drop=True)
-    combined_kb_terms = polymyer_dos_red_load['DOS (states/(eV cm^3))'] * electrolyte_dos_ox * fermi_dirac_kb
-    kb = integrate.cumulative_trapezoid(combined_kb_terms, polymer_dos_load['Energy wrt Vac (eV)'])
+    combined_kb_terms = polymyer_dos_red_load['DOS(E) (states / eV cm3)'] * electrolyte_dos_ox * fermi_dirac_kb
+    kb = integrate.cumulative_trapezoid(combined_kb_terms, polymer_dos_load['Energy (eV)'])
     kb = kb * (1.6*10**-22) # time constant
     kb = np.abs(kb)
 
     # Kf section
     # Multiplying the polymer DOS(E), electrolyte DOS(E) and the Fermi Dirac distribution for kf
-    combined_kf_terms = polymer_dos_load['DOS (states/(eV cm^3))'] * electrolyte_dos_red * subtracted_fermi
-    kf = integrate.cumulative_trapezoid(combined_kf_terms, x=polymer_dos_load['Energy wrt Vac (eV)'], dx=0.001)
+    combined_kf_terms = polymer_dos_load['DOS(E) (states / eV cm3)'] * electrolyte_dos_red * subtracted_fermi
+    kf = integrate.cumulative_trapezoid(combined_kf_terms, x=polymer_dos_load['Energy (eV)'], dx=0.001)
     kf = kf * (1.6*10**-22) # time constant
     kf = np.abs(kf)
 
-    data_ox = {'Energy (eV)': polymer_dos_load['Energy wrt Vac (eV)'][1:], "Kf (cm s^-1)":kf}
+    data_ox = {'Energy (eV)': polymer_dos_load['Energy (eV)'][1:], "Kf (cm s^-1)":kf}
     kf_df = pd.DataFrame(data_ox).reset_index(drop=True)
     
-    data_red = {'Energy (eV)': polymyer_dos_red_load['Energy wrt Vac (eV)'][1:], "Kb (cm s^-1)":kb}
+    data_red = {'Energy (eV)': polymyer_dos_red_load['Energy (eV)'][1:], "Kb (cm s^-1)":kb}
     kb_df = pd.DataFrame(data_red).reset_index(drop=True)
 
-    kf_df.to_csv(os.path.join(r"E:\Electrochemical_Parameters\kf_kb_reorg", kf_filename))
-    kb_df.to_csv(os.path.join(r"E:\Electrochemical_Parameters\kf_kb_reorg", kb_filename))
+    kf_df.to_csv(os.path.join(save_file_loc, kf_filename))
+    kb_df.to_csv(os.path.join(save_file_loc, kb_filename))
 
     fig, ax = plt.subplots()
-    ax.plot(polymyer_dos_red_load['Energy wrt Vac (eV)'][1:], kb)
-    ax.plot(polymer_dos_load['Energy wrt Vac (eV)'][1:], kf)
+    ax.plot(polymyer_dos_red_load['Energy (eV)'][1:], kb)
+    ax.plot(polymer_dos_load['Energy (eV)'][1:], kf)
     ax.set_yscale('log')
     plt.show()
 
@@ -130,7 +135,7 @@ def fermi_dirac_distribution(e, ef, temperature):
 
 
 def fermi_level_polymer(polymer_dos_df):
-    integral_dos = np.trapz(polymer_dos_df['DOS (states/(eV cm^3))'], x=polymer_dos_df['Energy wrt Vac (eV)'], dx = 0.001)
+    integral_dos = np.trapz(polymer_dos_df['DOS(E) (states / eV cm3)'], x=polymer_dos_df['Energy (eV)'], dx = 0.001)
     fermi_level_integral_val = integral_dos / 2
     index = 0
     final_index = int(len(polymer_dos_df))
@@ -138,11 +143,11 @@ def fermi_level_polymer(polymer_dos_df):
 
 
     while np.abs(calculated_fermi_level_integral) <= np.abs(fermi_level_integral_val):
-        calculated_fermi_level_integral = np.trapz(polymer_dos_df['DOS (states/(eV cm^3))'][0:index], x=polymer_dos_df['Energy wrt Vac (eV)'][0:index], dx = 0.001)
+        calculated_fermi_level_integral = np.trapz(polymer_dos_df['DOS(E) (states / eV cm3)'][0:index], x=polymer_dos_df['Energy (eV)'][0:index], dx = 0.001)
         index+=1
 
     
-    return (polymer_dos_df['Energy wrt Vac (eV)'].iloc[index])
+    return (polymer_dos_df['Energy (eV)'].iloc[index])
 
 
 

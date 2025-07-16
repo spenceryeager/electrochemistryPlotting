@@ -15,11 +15,12 @@ rcParams['savefig.dpi'] = 300
 
 # This only works for CH Instruments generated files. Can be used as a template for other instrument manufacturers
 
-# reminder: if working on this a while from now, looking at raw data file will give all parameters asked for in the prompts!
-
 def main():
+    # fill this out
     workingfile = r"file"
     savedir = r"savedir"
+    savename = r"savename"
+
     cv = pd.read_csv(workingfile, skiprows=rowskip(workingfile))
     number_of_sweeps = 2 # number of FULL cycles in the polymer
     ox_sweep_first = True # is the oxidation sweep first? True. Reduction sweep first? False
@@ -37,8 +38,8 @@ def main():
     if ox_sweep_first:
         polymer_dos_reduction = polymer_dos_reduction.reindex(index = polymer_dos_reduction.index[::-1]).reset_index(drop=True)
 
-    polymer_dos_reduction.to_csv(os.path.join(savedir, "p3ht_reduction_DOS.csv"))
-    polymer_dos_oxidation.to_csv(os.path.join(savedir, "p3ht_oxidation_DOS.csv"))
+    polymer_dos_reduction.to_csv(os.path.join(savedir, savename + "_reduction_dos.csv"))
+    polymer_dos_oxidation.to_csv(os.path.join(savedir, savename + "oxidation_DOS.csv"))
 
 
 def rowskip(workingfile):  # cleans up all the extra stuff in the header

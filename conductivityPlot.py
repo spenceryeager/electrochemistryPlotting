@@ -29,16 +29,14 @@ def main():
     width = 3.0 # cm, part of Ossila substrates
     area = thickness * width
     length = 0.005 # cm, 50 um to cm, part of Ossila substrates
+    voltage_difference = 0.01 # V, this is the potential difference between WE1 and WE2. 
 
     #########################
     #########################
 
     data = fileloading(workingfile) # loading data
-    conductivity_df = conductivity_calculation(data, area, length) # calculating conductivity
-    conductivity_df.to_csv(os.path.join(savedir,savename+".csv"))
-    fig, ax = plt.subplots()
-    ax.plot(conductivity_df['Potential/V'], conductivity_df['Conductivity (S/cm)'])
-    plt.show()
+    conductivity_df = conductivity_calculation_redux(data, area, length, voltage_difference) # calculating conductivity
+
 
 
 def fileloading(workingfile):
@@ -68,6 +66,16 @@ def rowskip(workingfile):  # cleans up all the extra stuff in the header
             row = count1
         count1 += 1
     return row
+
+
+def conductivity_calculation_redux(data, area, length, voltage_difference): # this is the easier method. Avoids discontinuities in the data.
+    resistance = np.divide(voltage_difference, data[' i2/A'])
+    resistivity = (resistance * area) / length
+    conductivity = np.reciprocal(resistivity)
+    data['Resistance (ohm)'] = resistance
+    data['Resisitivity (ohm cm)'] = resistivity
+    data['Conductivity (S/cm)'] = conductivity
+    return data
 
 
 

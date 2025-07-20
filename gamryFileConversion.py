@@ -6,9 +6,9 @@ import os
 
 
 def main():
-    fileloc = r"E:\RDrive_Backup\Spencer Yeager\papers\paper2_GATech_Collab_P3HT-PBTTT\electrochemistry_data\17July2025_Henry_Spincast_Annealed_P3HT\film3\Henry_P3HT_Spincast_Annealed_10mVs.DTA"
-    file_save_name = "Henry_P3HT_Spincast_Annealed_10mVs"
-    file_save_dir = r"E:\RDrive_Backup\Spencer Yeager\papers\paper2_GATech_Collab_P3HT-PBTTT\electrochemistry_data\17July2025_Henry_Spincast_Annealed_P3HT\film3"
+    fileloc = r"filelocation"
+    file_save_name = "filename"
+    file_save_dir = r"savedirectory"
     cleaned_file = gamryConversion(fileloc, True, 65)
     cleaned_file.to_csv(os.path.join(file_save_dir, (file_save_name + ".csv")), index = False)
 
@@ -31,6 +31,12 @@ def gamryConversion(file, convention_conversion, skipping):
 
     converted_file['Potential/V'] = pd.to_numeric(converted_file['Potential/V'])
     converted_file[' Current/A'] = pd.to_numeric(converted_file[' Current/A'])
+
+
+    if convention_conversion:
+        converted_file[' Current/A'] = np.negative(converted_file[' Current/A'])
+
+
     return converted_file
 
 

@@ -22,13 +22,13 @@ def main():
     savename = r"savename"
 
     cv = pd.read_csv(workingfile, skiprows=rowskip(workingfile))
-    number_of_sweeps = 2 # number of FULL cycles in the polymer
+    number_of_sweeps = 1 # number of FULL cycles in the polymer
     ox_sweep_first = True # is the oxidation sweep first? True. Reduction sweep first? False
     ox_subset, red_subset = get_voltammograms(cv, number_of_sweeps, ox_sweep_first) # These are used to get the DOS(E) for the anodic and cathodic sweeps.
 
     # Set parameters below for polymer
     area = 0.71 # in cm^2
-    d = 300 * (10**-7) # film thickness. Can get this from profilometry of the polymer film
+    d = 20.7 * (10**-7) # film thickness. Can get this from profilometry of the polymer film
     v = 0.01 # scan rate of the system, V/s
     ev_conversion_factor = 4.5 # this conversion factor is for converting AgCl potentials to eV
 
@@ -39,7 +39,7 @@ def main():
         polymer_dos_reduction = polymer_dos_reduction.reindex(index = polymer_dos_reduction.index[::-1]).reset_index(drop=True)
 
     polymer_dos_reduction.to_csv(os.path.join(savedir, savename + "_reduction_dos.csv"))
-    polymer_dos_oxidation.to_csv(os.path.join(savedir, savename + "oxidation_DOS.csv"))
+    polymer_dos_oxidation.to_csv(os.path.join(savedir, savename + "_oxidation_DOS.csv"))
 
 
 def rowskip(workingfile):  # cleans up all the extra stuff in the header
@@ -54,16 +54,26 @@ def rowskip(workingfile):  # cleans up all the extra stuff in the header
 
 def get_voltammograms(cv, number_of_sweeps, ox_sweep_first):
     number_of_points = len(cv)
-    length_of_sweep = int(number_of_points / number_of_sweeps)
-    # By default, I typically record TWO full cycles at low scan rates. I will go in later and add a better system if there are 1, 3, 4, etc. 
-    red_ox_sweep_length = int(length_of_sweep / 2)
+    if number_of_sweeps == 1:
+        
+        if ox_sweep_first:
+            ox_subset = cv[:int(number_of_points / 2)]
+            red_subset = cv[int(number_of_points / 2):]
+        else:
+            red_subset = cv[:int(number_of_points / 2)]
+            ox_subset = cv[int(number_of_points / 2):]
 
-    if ox_sweep_first:
-        ox_subset = cv[length_of_sweep : length_of_sweep + red_ox_sweep_length]
-        red_subset = cv[length_of_sweep + red_ox_sweep_length :]
     else:
-        red_subset = cv[length_of_sweep : length_of_sweep + red_ox_sweep_length]
-        ox_subset = cv[length_of_sweep + red_ox_sweep_length :]
+        length_of_sweep = int(number_of_points / number_of_sweeps)
+        # By default, I typically record TWO full cycles at low scan rates. I will go in later and add a better system if there are 1, 3, 4, etc. 
+        red_ox_sweep_length = int(length_of_sweep / 2)
+
+        if ox_sweep_first:
+            ox_subset = cv[length_of_sweep : length_of_sweep + red_ox_sweep_length]
+            red_subset = cv[length_of_sweep + red_ox_sweep_length :]
+        else:
+            red_subset = cv[length_of_sweep : length_of_sweep + red_ox_sweep_length]
+            ox_subset = cv[length_of_sweep + red_ox_sweep_length :]
 
     return ox_subset, red_subset
 
@@ -79,7 +89,7 @@ def get_voltammograms(cv, number_of_sweeps, ox_sweep_first):
 
 def dos_oxidation(analyze_sweep, area, d, v, ev_conversion_factor):
     ev_scale = analyze_sweep['Potential/V']
-    ev_scale = -(ev_scale + 4.5)
+    ev_scale = -(ev_scale + ev_conversion_factor)
 
     dos_array = analyze_sweep[' Current/A']
     dos_array = dos_array / area
@@ -94,9 +104,9 @@ def dos_oxidation(analyze_sweep, area, d, v, ev_conversion_factor):
     return dos_df
 
 
-def dos_reduction(analyze_sweep, area, d, v, ev_conversion):
+def dos_reduction(analyze_sweep, area, d, v, ev_conversion_factor):
     ev_scale = analyze_sweep['Potential/V']
-    ev_scale = -(ev_scale + 4.5)
+    ev_scale = -(ev_scale + ev_conversion_factor)
 
     dos_array = analyze_sweep[' Current/A']
     dos_array = dos_array / area

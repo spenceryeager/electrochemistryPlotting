@@ -21,14 +21,14 @@ import os
 def main():
     #########################
     #### FILL THIS OUT ######
-    workingfile = r"D:\10July2025_insitu_conductivity_P3HT_PBTTT\p3ht\run1.csv"
-    savedir = r"D:\10July2025_insitu_conductivity_P3HT_PBTTT\p3ht\worked_up"
-    savename = r"p3ht_conductivity"
+    workingfile = r"workingfile"
+    savedir = r"savedir"
+    savename = r"savename"
     
-    thickness = (27 * (10 **-7)) # cm, film thickness
+    thickness = (60 * (10 **-7)) # cm, film thickness
     width = 3.0 # cm, part of Ossila substrates
     area = thickness * width
-    length = 0.005 # cm, 50 um to cm, part of Ossila substrates
+    length = 0.007 # cm, 50 um to cm, part of Ossila substrates
     voltage_difference = 0.01 # V, this is the potential difference between WE1 and WE2. 
 
     #########################
@@ -36,6 +36,7 @@ def main():
 
     data = fileloading(workingfile) # loading data
     conductivity_df = conductivity_calculation_redux(data, area, length, voltage_difference) # calculating conductivity
+    conductivity_df.to_csv(os.path.join(savedir,savename + ".csv"), index=False)
 
 
 

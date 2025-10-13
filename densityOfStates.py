@@ -17,18 +17,18 @@ rcParams['savefig.dpi'] = 300
 
 def main():
     # fill this out
-    workingfile = r"file"
-    savedir = r"savedir"
-    savename = r"savename"
+    workingfile = r"G:\RDrive_Backup\Spencer Yeager\papers\paper2_GATech_Collab_P3HT-PBTTT\electrochemistry_data\DOS_Films_Comparisons\14Sep2025_Henry_Spincast_Wirebar_PBTTT_DOS\wirebar\10mvs_wirebar_specechem.csv"
+    savedir = r"G:\RDrive_Backup\Spencer Yeager\papers\paper2_GATech_Collab_P3HT-PBTTT\worked_up_data\DOS\14Sep2025_PBTTT_Wirebar_Spincast"
+    savename = r"wirebar_PBTTT_C16"
 
     cv = pd.read_csv(workingfile, skiprows=rowskip(workingfile))
-    number_of_sweeps = 1 # number of FULL cycles in the polymer
+    number_of_sweeps = 2 # number of FULL cycles in the polymer
     ox_sweep_first = True # is the oxidation sweep first? True. Reduction sweep first? False
     ox_subset, red_subset = get_voltammograms(cv, number_of_sweeps, ox_sweep_first) # These are used to get the DOS(E) for the anodic and cathodic sweeps.
 
     # Set parameters below for polymer
     area = 0.71 # in cm^2
-    d = 20.7 * (10**-7) # film thickness. Can get this from profilometry of the polymer film
+    d = 300 * (10**-7) # film thickness. Can get this from profilometry of the polymer film
     v = 0.01 # scan rate of the system, V/s
     ev_conversion_factor = 4.5 # this conversion factor is for converting AgCl potentials to eV
 

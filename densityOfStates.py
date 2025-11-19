@@ -17,20 +17,20 @@ rcParams['savefig.dpi'] = 300
 
 def main():
     # fill this out
-    workingfile = r"G:\RDrive_Backup\Spencer Yeager\papers\paper2_GATech_Collab_P3HT-PBTTT\electrochemistry_data\DOS_Films_Comparisons\14Sep2025_Henry_Spincast_Wirebar_PBTTT_DOS\wirebar\10mvs_wirebar_specechem.csv"
-    savedir = r"G:\RDrive_Backup\Spencer Yeager\papers\paper2_GATech_Collab_P3HT-PBTTT\worked_up_data\DOS\14Sep2025_PBTTT_Wirebar_Spincast"
-    savename = r"wirebar_PBTTT_C16"
+    workingfile = r"E:\RDrive_Backup\Spencer Yeager\papers\paper8_UK_Megan_N2200_Paper\data\electrochemistry\150C_Annealed_Film\10mVs_scan_specechem.csv"
+    savedir = r"E:\RDrive_Backup\Spencer Yeager\papers\paper8_UK_Megan_N2200_Paper\worked_up_data"
+    savename = r"annealed_150C_N2200"
 
     cv = pd.read_csv(workingfile, skiprows=rowskip(workingfile))
-    number_of_sweeps = 2 # number of FULL cycles in the polymer
-    ox_sweep_first = True # is the oxidation sweep first? True. Reduction sweep first? False
+    number_of_sweeps = 5 # number of FULL cycles in the polymer
+    ox_sweep_first = False # is the oxidation sweep first? True. Reduction sweep first? False
     ox_subset, red_subset = get_voltammograms(cv, number_of_sweeps, ox_sweep_first) # These are used to get the DOS(E) for the anodic and cathodic sweeps.
 
     # Set parameters below for polymer
     area = 0.71 # in cm^2
-    d = 300 * (10**-7) # film thickness. Can get this from profilometry of the polymer film
+    d = 60 * (10**-7) # film thickness. Can get this from profilometry of the polymer film
     v = 0.01 # scan rate of the system, V/s
-    ev_conversion_factor = 4.5 # this conversion factor is for converting AgCl potentials to eV
+    ev_conversion_factor = 4.9 # this conversion factor is for converting AgCl potentials to eV. For AgNO3, this is 4.9
 
     polymer_dos_oxidation = dos_oxidation(ox_subset, area, d, v, ev_conversion_factor)
     polymer_dos_reduction = dos_reduction(red_subset, area, d, v, ev_conversion_factor)
@@ -69,11 +69,22 @@ def get_voltammograms(cv, number_of_sweeps, ox_sweep_first):
         red_ox_sweep_length = int(length_of_sweep / 2)
 
         if ox_sweep_first:
-            ox_subset = cv[length_of_sweep : length_of_sweep + red_ox_sweep_length]
-            red_subset = cv[length_of_sweep + red_ox_sweep_length :]
+            ox_begin = length_of_sweep
+            ox_end = length_of_sweep + red_ox_sweep_length
+            red_begin = length_of_sweep + red_ox_sweep_length
+            red_end = length_of_sweep + red_ox_sweep_length + red_ox_sweep_length
+
+            ox_subset = cv[ox_begin : ox_end]
+            red_subset = cv[red_begin : red_end]
         else:
-            red_subset = cv[length_of_sweep : length_of_sweep + red_ox_sweep_length]
-            ox_subset = cv[length_of_sweep + red_ox_sweep_length :]
+            red_begin = length_of_sweep
+            red_end = length_of_sweep + red_ox_sweep_length
+            ox_begin = length_of_sweep + red_ox_sweep_length
+            ox_end = length_of_sweep + red_ox_sweep_length + red_ox_sweep_length
+
+
+            red_subset = cv[red_begin : red_end]
+            ox_subset = cv[ox_begin : ox_end]
 
     return ox_subset, red_subset
 
@@ -89,6 +100,7 @@ def get_voltammograms(cv, number_of_sweeps, ox_sweep_first):
 
 def dos_oxidation(analyze_sweep, area, d, v, ev_conversion_factor):
     ev_scale = analyze_sweep['Potential/V']
+    potential_scale = analyze_sweep['Potential/V']
     ev_scale = -(ev_scale + ev_conversion_factor)
 
     dos_array = analyze_sweep[' Current/A']
@@ -99,13 +111,14 @@ def dos_oxidation(analyze_sweep, area, d, v, ev_conversion_factor):
     dos_array = dos_array.clip(upper=0)
     dos_array = np.absolute(dos_array)
 
-    dos_data = {'Energy (eV)' : ev_scale, 'DOS(E) (states / eV cm3)': dos_array}
+    dos_data = {'Energy (eV)' : ev_scale, "Potential (V)" : potential_scale, 'DOS(E) (states / eV cm3)': dos_array}
     dos_df = pd.DataFrame(dos_data).reset_index(drop=True)
     return dos_df
 
 
 def dos_reduction(analyze_sweep, area, d, v, ev_conversion_factor):
     ev_scale = analyze_sweep['Potential/V']
+    potential_scale = analyze_sweep['Potential/V']
     ev_scale = -(ev_scale + ev_conversion_factor)
 
     dos_array = analyze_sweep[' Current/A']
@@ -116,7 +129,7 @@ def dos_reduction(analyze_sweep, area, d, v, ev_conversion_factor):
     dos_array = dos_array.clip(lower=0)
     dos_array = np.absolute(dos_array)
 
-    dos_data = {'Energy (eV)' : ev_scale, 'DOS(E) (states / eV cm3)': dos_array}
+    dos_data = {'Energy (eV)' : ev_scale, "Potential (V)" : potential_scale, 'DOS(E) (states / eV cm3)': dos_array}    
     dos_df = pd.DataFrame(dos_data).reset_index(drop=True)
     return dos_df
 

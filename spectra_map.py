@@ -34,7 +34,7 @@ def main():
 
 
     fig, ax = plt.subplots()
-    ax.contourf(xlamb, ypot, spec_file_load, levels=200, vmin=min_val, vmax=max_val)
+    ax.contour(xlamb, ypot, spec_file_load, vmin=min_val, vmax=max_val)
     ax.set_xlim(400,1100)
     plt.show()
 # # def make_map

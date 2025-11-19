@@ -6,9 +6,9 @@ import os
 
 
 def main():
-    fileloc = r"filelocation"
-    file_save_name = "filename"
-    file_save_dir = r"savedirectory"
+    fileloc = r"E:\RDrive_Backup\Spencer Yeager\papers\paper2_GATech_Collab_P3HT-PBTTT\electrochemistry_data\DOS_Films_Comparisons\15Aug2025_StaticDynamic_PBTTT_P3HT_IBTDT\P3HT\P3HT_Static_Dynamic_SEC_10mV_Run1.DTA"
+    file_save_name = "P3HT_Static_Dynamic_SEC_10mV_Run1"
+    file_save_dir = r"E:\RDrive_Backup\Spencer Yeager\papers\paper2_GATech_Collab_P3HT-PBTTT\electrochemistry_data\DOS_Films_Comparisons\15Aug2025_StaticDynamic_PBTTT_P3HT_IBTDT\P3HT"
     cleaned_file = gamryConversion(fileloc, True, 65)
     cleaned_file.to_csv(os.path.join(file_save_dir, (file_save_name + ".csv")), index = False)
 

@@ -3,22 +3,38 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.constants as constant
+import pandas as pd
+import os
 
 
 def main():
-    reorg_energy = 0.5 # eV
-    eo = -5.05 # eV of ferrocene
-    e_red = np.linspace(eo,-4, 1000) # energy scale
-    e_ox = np.linspace(eo,-6, 1000) # energy scale
+    save_dir = r"E:\RDrive_Backup\Spencer Yeager\papers\paper4_pbtttt_p3ht_transfer_kinetics\worked-up-data"
+    save_name = 'ferrocene_dos'
+    reorg_energy = 0.75# eV
+    eo = -4.9 # eV of ferrocene
+    e_red = np.linspace(eo,-1, 1000) # energy scale
+    e_ox = np.linspace(eo,-8, 1000) # energy scale
     conc_red = 0.0015 # molar
     temperature = 298 # K
+
+    plot = False
     dos_red = dos_estimate_red(reorg_energy, conc_red, temperature, eo, e_red)
     dos_ox = dos_estimate_ox(reorg_energy, conc_red, temperature, eo, e_ox)
+    data = {
+        'Reduction (eV)':e_red,
+        'Oxidation (eV)':e_ox,
+        'Reduction DOS':dos_red,
+        'Oxidation DOS':dos_ox
+    }
+    
+    save = pd.DataFrame(data)
+    save.to_csv(os.path.join(save_dir, (save_name)+'.csv'))
 
-    fig, ax = plt.subplots()
-    ax.plot(dos_red, e_red)
-    ax.plot(dos_ox, e_ox)
-    plt.show()
+    if plot:
+        fig, ax = plt.subplots()
+        ax.plot(dos_red, e_red)
+        ax.plot(dos_ox, e_ox)
+        plt.show()
 
 
 def dos_estimate_red(reorg_energy, concentration, temperature, eo, e):
